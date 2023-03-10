@@ -15,12 +15,12 @@
         android:layout_marginBottom="10dp"
         android:contentDescription="@string/new_card_button"
         android:src="@drawable/new_card_white"
-        android:tint="#FFFFFF"
+        app:backgroundTint="#FF6F00"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="30dp"
-        app:rippleColor="@color/purple_500"
+        app:rippleColor="#F88242"
         app:useCompatPadding="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

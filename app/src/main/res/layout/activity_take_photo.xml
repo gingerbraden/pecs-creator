@@ -10,23 +10,14 @@
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="0dp"
-        android:layout_height="576dp"
-        android:layout_marginTop="60dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" >
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/image_capture_button"
-        android:layout_width="114dp"
-        android:layout_height="55dp"
-        android:layout_marginTop="30dp"
-        android:elevation="2dp"
-        android:text="@string/take_photo"
-        app:layout_constraintEnd_toStartOf="@+id/vertical_centerline"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/vertical_centerline"
-        app:layout_constraintTop_toBottomOf="@+id/viewFinder" />
+    </androidx.camera.view.PreviewView>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vertical_centerline"
@@ -34,5 +25,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent=".50" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/image_capture_button"
+        android:layout_width="114dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="50dp"
+        android:elevation="2dp"
+        android:text="@string/take_photo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

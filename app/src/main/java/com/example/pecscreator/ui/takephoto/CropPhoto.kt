@@ -1,5 +1,7 @@
 package com.example.pecscreator.ui.takephoto
 
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -34,7 +36,10 @@ class CropPhoto : Fragment() {
         _binding = FragmentCropPhotoBinding.inflate(inflater, container, false)
 
 
-        binding.imageView.setImageURI(sharedViewModel.savedPhotoUri)
+//        binding.imageView.setImageURI(sharedViewModel.savedPhotoUri)
+        binding.cropImageView.setImageUriAsync(sharedViewModel.savedPhotoUri)
+        binding.cropImageView.cropRect = Rect(150, 150, 300, 300)
+
 
         return binding.root
     }
