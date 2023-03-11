@@ -28,7 +28,7 @@ class CreateCardActivity : AppCompatActivity() {
 
     lateinit var module : PyObject
 
-    var coords : String = ""
+    var coords : MutableList<Int> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,19 +55,26 @@ class CreateCardActivity : AppCompatActivity() {
 
 
 
-        binding.button.setOnClickListener {
-
-            if (!coords.equals("")) {
-                val coords = coords.split(":").stream().map { x -> x.toInt() }.toList()
+        binding.cropButton.setOnClickListener {
+            if (coords.isNotEmpty()) {
                 binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[3])
             }
+        }
 
+        binding.rotateButton.setOnClickListener {
+            rotateImageAndCoordinates()
+
+        }
+
+        binding.resetButton.setOnClickListener {
+            binding.cropImageView.resetCropRect()
         }
 
     }
 
     override fun onStart() {
         super.onStart()
+        Log.d("ahoj", "zaciatok koordinacky")
         getCroppedCoordinates()
 
     }
@@ -77,28 +84,31 @@ class CreateCardActivity : AppCompatActivity() {
             delay(1500)
             val bytes = module.callAttr("returnCoordinates",
                 getStringFromImageView(binding.cropImageView.getCroppedImage()!!))
-            coords = bytes.toString()
+            coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
             Log.d("ahoj", "hotovo koordinacky")
-            binding.button.isClickable = true
-            binding.button.alpha = 1F
+            binding.cropButton.isClickable = true
+            binding.cropButton.alpha = 1F
         }
     }
 
-    suspend fun getStringFromImageView(b : Bitmap) : String {
+    fun getStringFromImageView(b : Bitmap) : String {
         val baos = ByteArrayOutputStream()
-        b.compress(Bitmap.CompressFormat.PNG, 10, baos)
+        b.compress(Bitmap.CompressFormat.JPEG, 30, baos)
         val imageBytes = baos.toByteArray()
         val encodedImage = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
         return encodedImage
     }
 
+    fun rotateImageAndCoordinates() {
+        binding.cropImageView.rotateImage(90)
+        val oldX = coords[0]
+        coords[0] = -coords[1]
+        coords[1] = oldX
 
-
-
-
-
-
-
+        val oldWidth = coords[2]
+        coords[2] = coords[3]
+        coords[3] = oldWidth
+    }
 
 
 

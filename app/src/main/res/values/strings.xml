@@ -12,4 +12,6 @@
 
     <string name="take_photo">Take Photo</string>
     <string name="auto_crop">Auto Crop</string>
+    <string name="rotate">Rotate</string>
+    <string name="reset">Reset</string>
 </resources>

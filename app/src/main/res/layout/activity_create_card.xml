@@ -23,41 +23,58 @@
     <!-- Image Cropper fill the remaining available height -->
     <com.canhub.cropper.CropImageView
         android:id="@+id/cropImageView"
-        android:layout_width="353dp"
-        android:layout_height="467dp"
-        android:layout_marginTop="56dp"
+        android:layout_width="0dp"
+        android:layout_height="492dp"
+        android:layout_marginTop="25dp"
         android:layout_weight="1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="@+id/guideline3"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/cropButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:alpha="0.5"
+        android:clickable="false"
+        android:text="@string/auto_crop"
+        app:icon="@drawable/baseline_stream_24"
+        app:layout_constraintEnd_toStartOf="@+id/rotateButton"
+        app:layout_constraintStart_toEndOf="@+id/resetButton"
+        app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
+
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="@string/reset"
+        app:layout_constraintStart_toStartOf="@+id/cropImageView"
+        app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
+
+    <Button
+        android:id="@+id/rotateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="Rotate"
+        app:icon="@drawable/ic_rotate_left_24"
+        app:layout_constraintEnd_toEndOf="@+id/cropImageView"
+        app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.96" />
 
-    <Button
-        android:id="@+id/button"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="20dp"
-        android:alpha="0.5"
-        android:clickable="false"
-        android:text="@string/auto_crop"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="50dp"
-        android:text="Button"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
