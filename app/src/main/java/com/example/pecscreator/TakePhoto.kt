@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.pecscreator.databinding.ActivityMainBinding
 import com.example.pecscreator.databinding.ActivityTakePhotoBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -35,6 +37,8 @@ class TakePhoto : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = com.example.pecscreator.databinding.ActivityTakePhotoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        getSupportActionBar()?.setTitle("Take A Picture");
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -60,7 +64,8 @@ class TakePhoto : AppCompatActivity() {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PECS Creator")
+//                put(Environment.DIRECTORY_PICTURES, "/PECS Creator")
             }
         }
 
@@ -85,7 +90,9 @@ class TakePhoto : AppCompatActivity() {
                         onImageSaved(output: ImageCapture.OutputFileResults){
 
                     val intent = Intent(this@TakePhoto, CreateCardActivity::class.java)
+                    Log.d("ahoj", name)
                     intent.putExtra("uri", output.savedUri)
+                    intent.putExtra("name", name)
                     startActivity(intent)
 
 //                    val msg = "Photo capture succeeded: ${output.savedUri}"
@@ -142,7 +149,7 @@ class TakePhoto : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "CameraXApp"
+        private const val TAG = "PECS_Creator_"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =

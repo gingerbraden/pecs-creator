@@ -14,4 +14,7 @@
     <string name="auto_crop">Auto Crop</string>
     <string name="rotate">Rotate</string>
     <string name="reset">Reset</string>
+    <string name="save">Save</string>
+    <string name="card_desc">Card Description</string>
+    <string name="fin_a_save">Finish and Save</string>
 </resources>

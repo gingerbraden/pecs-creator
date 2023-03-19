@@ -23,4 +23,13 @@
         app:rippleColor="#F88242"
         app:useCompatPadding="false" />
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="317dp"
+        android:layout_height="375dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.chaquo.python'
+    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp' version '1.8.0-1.0.8'
 }
 
 android {
@@ -32,8 +34,10 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
         }
     }
     compileOptions {
@@ -78,4 +82,17 @@ dependencies {
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
     implementation("com.vanniktech:android-image-cropper:4.5.0")
+
+    def room_version = "2.5.0"
+
+
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+//     To use Kotlin annotation processing tool (kapt)
+    kapt "androidx.room:room-compiler:$room_version"
+//    // To use Kotlin Symbol Processing (KSP)
+//    ksp "androidx.room:room-compiler:$room_version"
+
+
 }
