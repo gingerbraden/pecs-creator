@@ -2,6 +2,7 @@ package com.example.pecscreator
 
 import android.app.Application
 import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.chaquo.python.PyObject
@@ -13,6 +14,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var savedPhotoUri : Uri
     lateinit var savedPhotoName : String
     lateinit var module : PyObject
+
+
+    var selectionMode = false;
+    var selectedCards = mutableListOf<Card>()
+
 
 
 

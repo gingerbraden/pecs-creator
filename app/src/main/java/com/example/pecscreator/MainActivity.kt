@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.apply {
 
             layoutManager = GridLayoutManager(this@MainActivity, 2)
-            adapter = CardsAdapter(all)
+            adapter = CardsAdapter(all, viewModel)
         }
 
 
