@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Media
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -24,7 +23,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import kotlin.streams.toList
 
 class CreateCardActivity : AppCompatActivity() {
@@ -37,6 +35,8 @@ class CreateCardActivity : AppCompatActivity() {
     lateinit var module : PyObject
 
     var coords : MutableList<Int> = mutableListOf()
+
+    var oldRect : Rect? = Rect()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,13 +66,13 @@ class CreateCardActivity : AppCompatActivity() {
 
 
         binding.cropImageView.setImageUriAsync(viewModel.savedPhotoUri)
-//        binding.cropImageView.setAspectRatio(1, 1)
+        binding.cropImageView.setAspectRatio(1, 1)
+        oldRect = binding.cropImageView.cropRect
 
 
-        //TODO vyratanie s ohladom na stvorcovy aspect ratio
         binding.cropButton.setOnClickListener {
             if (coords.isNotEmpty()) {
-                binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[3])
+                binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[2])
             }
         }
 
@@ -82,6 +82,7 @@ class CreateCardActivity : AppCompatActivity() {
 
         //TODO not working with autocrop
         binding.resetButton.setOnClickListener {
+            binding.cropImageView.cropRect = oldRect
             binding.cropImageView.resetCropRect()
         }
 
@@ -98,25 +99,27 @@ class CreateCardActivity : AppCompatActivity() {
 
         val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
-        val file = File(dir, viewModel.savedPhotoName + "E.jpg")
+//        val file = File(dir, viewModel.savedPhotoName + "E.jpg")
 
 
 
-        val resolver = application.contentResolver
-        val imagesCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-        val imageDetails = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, viewModel.savedPhotoName + "E.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "PECS Creator")
-        }
-        val imageUri = resolver.insert(imagesCollection, imageDetails)
-        val outputStream = resolver.openOutputStream(imageUri!!)
-        binding.cropImageView.getCroppedImage()?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+//        val resolver = application.contentResolver
+//        val imagesCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+//        val imageDetails = ContentValues().apply {
+//            put(MediaStore.Images.Media.DISPLAY_NAME, viewModel.savedPhotoName + "E.jpg")
+//            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+//            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "PECS Creator")
+//        }
+//        val imageUri = resolver.insert(imagesCollection, imageDetails)
+//        val outputStream = resolver.openOutputStream(imageUri!!)
+//        binding.cropImageView.getCroppedImage()?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+//        binding.cropImageView.getCroppedImage(1200, 1200)?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
 
-        outputStream?.flush()
-        outputStream?.close()
+//        outputStream?.flush()
+//        outputStream?.close()
 
-        val card = Card(binding.textView.text.toString(), file.absolutePath)
+//        val card = Card(binding.textView.text.toString(), file.absolutePath)
+        val card = Card(binding.textView.text.toString(), binding.cropImageView.getCroppedImage(1200, 1200))
 
         val db = CardsDatabase.getInstance(this)
         val dao = db.cardsDao()
@@ -133,20 +136,40 @@ class CreateCardActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        Log.d("ahoj", "zaciatok koordinacky")
         getCroppedCoordinates()
 
     }
 
     fun getCroppedCoordinates() = run {
         lifecycleScope.launch(Dispatchers.IO) {
-            delay(1500)
+//            delay(500)
+            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, viewModel.savedPhotoUri)
             val bytes = module.callAttr("returnCoordinates",
-                getStringFromImageView(binding.cropImageView.getCroppedImage()!!))
+//                getStringFromImageView(binding.cropImageView.getCroppedImage(binding.cropImageView.height, binding.cropImageView.width)!!)
+                getStringFromImageView(bitmap)
+            )
             coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
-            Log.d("ahoj", "hotovo koordinacky")
+            editCoordsToSquare()
             binding.cropButton.isClickable = true
             binding.cropButton.alpha = 1F
+        }
+    }
+
+    fun editCoordsToSquare() {
+
+        val oldW = coords[2]
+        val oldH = coords[3]
+
+        if (oldW > oldH) {
+            val diff = (oldW - oldH) / 2
+            coords[1] = coords[1] - diff
+            coords[3] = coords[3] + diff*2
+        }
+
+        if (oldW < oldH) {
+            val diff = (oldH - oldW) / 2
+            coords[0] = coords[0] - diff
+            coords[2] = coords[2] + diff*2
         }
     }
 

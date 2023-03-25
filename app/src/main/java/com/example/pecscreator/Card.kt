@@ -9,7 +9,7 @@ import java.sql.Blob
 @Entity(tableName = "cards")
 data class Card (
     val description: String,
-    val imageUri: String
+    val imageUri: Bitmap?
 ){
     @PrimaryKey(autoGenerate = true) var id: Int = 0
 }
