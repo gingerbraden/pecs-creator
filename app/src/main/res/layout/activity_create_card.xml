@@ -35,7 +35,7 @@
         android:id="@+id/cropButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="15dp"
         android:alpha="0.5"
         android:clickable="false"
         android:text="@string/auto_crop"
@@ -48,7 +48,7 @@
         android:id="@+id/resetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="15dp"
         android:text="@string/reset"
         app:layout_constraintStart_toStartOf="@+id/cropImageView"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
@@ -57,7 +57,7 @@
         android:id="@+id/rotateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="15dp"
         android:text="Rotate"
         app:icon="@drawable/ic_rotate_left_24"
         app:layout_constraintEnd_toEndOf="@+id/cropImageView"
@@ -81,22 +81,11 @@
         android:id="@+id/textView"
         android:layout_width="350dp"
         android:layout_height="45dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="15dp"
         android:hint="@string/card_desc"
         android:singleLine="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cropImageView" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:text="@string/save"
-        app:icon="@drawable/baseline_done_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cropButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

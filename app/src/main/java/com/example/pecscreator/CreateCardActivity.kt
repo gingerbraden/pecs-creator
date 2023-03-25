@@ -66,7 +66,7 @@ class CreateCardActivity : AppCompatActivity() {
 
 
         binding.cropImageView.setImageUriAsync(viewModel.savedPhotoUri)
-        binding.cropImageView.setAspectRatio(1, 1)
+//        binding.cropImageView.setAspectRatio(1, 1)
 
 
         //TODO vyratanie s ohladom na stvorcovy aspect ratio
@@ -80,6 +80,7 @@ class CreateCardActivity : AppCompatActivity() {
             rotateImageAndCoordinates()
         }
 
+        //TODO not working with autocrop
         binding.resetButton.setOnClickListener {
             binding.cropImageView.resetCropRect()
         }
