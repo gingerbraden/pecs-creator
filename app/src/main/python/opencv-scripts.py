@@ -102,6 +102,41 @@ def returnCoordinates(obrazok):
 
     x,y,w,h = cv2.boundingRect(cnts[0])
 
+    decoded_data = base64.b64decode(obrazok)
+    np_data = np.fromstring(decoded_data, np.uint8)
+    image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
+    Hx,Hy,Hw,Hh = findFaceOutline(image)
 
-    return str(x) + ":" + str(y) + ":" + str(w) + ":" + str(h)
+    if x > Hx: x = Hx
+    if y > Hy: y = Hy
+    if x+Hw > x + w: w = Hw
+    if y+Hh > y + h: h = Hh
+
+
+    return str(x) + ":" + str(y) + ":" + str(w) + ":" + str(h) + ":" + str(Hx) + ":" + str(Hy) + ":" + str(Hw) + ":" + str(Hh)
+
+
+def findFaceOutline(obrazok):
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # Read the input image
+    img = obrazok
+    # Convert into grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Detect faces
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    # Draw rectangle around the faces
+
+
+    lowestx = img.shape[1]
+    lowesty = img.shape[0]
+    highestx = 0
+    highesty = 0
+
+    for (x, y, w, h) in faces:
+        if x < lowestx: lowestx = x
+        if y < lowesty: lowesty = y
+        if x+w > highestx+x: highestx = w
+        if y+h > highesty+y: highesty = h
+
+    return [lowestx, lowesty, highestx, highesty]
 

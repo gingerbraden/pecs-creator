@@ -38,6 +38,8 @@ class CreateCardActivity : AppCompatActivity() {
 
     var oldRect : Rect? = Rect()
 
+    var editedBmp : Bitmap? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateCardBinding.inflate(layoutInflater)
@@ -72,7 +74,9 @@ class CreateCardActivity : AppCompatActivity() {
 
         binding.cropButton.setOnClickListener {
             if (coords.isNotEmpty()) {
-                binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[2])
+                binding.cropImageView.resetCropRect()
+                binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[3])
+//                binding.cropImageView.setImageBitmap(editedBmp)
             }
         }
 
@@ -142,13 +146,13 @@ class CreateCardActivity : AppCompatActivity() {
 
     fun getCroppedCoordinates() = run {
         lifecycleScope.launch(Dispatchers.IO) {
-//            delay(500)
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, viewModel.savedPhotoUri)
             val bytes = module.callAttr("returnCoordinates",
-//                getStringFromImageView(binding.cropImageView.getCroppedImage(binding.cropImageView.height, binding.cropImageView.width)!!)
                 getStringFromImageView(bitmap)
             )
             coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
+            Log.d("Ahoj", coords.toString())
+            editedBmp = bitmap
             editCoordsToSquare()
             binding.cropButton.isClickable = true
             binding.cropButton.alpha = 1F
