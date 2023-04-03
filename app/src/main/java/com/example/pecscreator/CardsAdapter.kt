@@ -50,9 +50,11 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         if (!(card in viewModel.selectedCards)) {
             viewModel.selectedCards.add(card)
             viewModel.selectionMode = true
+            viewModel.numOfCards.value = viewModel.selectedCards.size
             return true
         } else {
             viewModel.selectedCards.remove(card)
+            viewModel.numOfCards.value = viewModel.selectedCards.size
             if (viewModel.selectedCards.isEmpty()) {
                 viewModel.selectionMode = false
             }

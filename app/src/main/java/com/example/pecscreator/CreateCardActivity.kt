@@ -97,6 +97,11 @@ class CreateCardActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        invalidateOptionsMenu()
+        return super.onPrepareOptionsMenu(menu)
+    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 

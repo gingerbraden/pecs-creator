@@ -1,28 +1,21 @@
 package com.example.pecscreator
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.ImageCapture
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.ExecutorService
 
 
 class MainActivity : AppCompatActivity() {
@@ -55,6 +48,13 @@ class MainActivity : AppCompatActivity() {
         dao = db.cardsDao()
         val all = dao.getAll()
 
+        // Create the observer which updates the UI.
+        val nameObserver = androidx.lifecycle.Observer<Int> {x ->
+//            if (x.equals(6)) {
+                invalidateOptionsMenu()
+//            }
+        }
+        viewModel.numOfCards.observe(this, nameObserver)
 
 
 
@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         binding.galleryButton.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
+
 
 
 
@@ -126,6 +127,32 @@ class MainActivity : AppCompatActivity() {
             binding.cameraButton.visibility = View.INVISIBLE
             binding.galleryButton.visibility = View.INVISIBLE
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.pdf_menu, menu)
+        if (menu != null) {
+            Log.d("ahoj", "oncreate ${menu.getItem(0).isVisible}")
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        if (menu != null) {
+//            menu.getItem(0).isVisible = false
+            Log.d("ahoj", "onprepare ${menu.getItem(0).isVisible}, ${viewModel.numOfCards.value}")
+//            menu.getItem(0).isVisible = true
+            if (viewModel.numOfCards.value?.equals(6) == true) menu.getItem(0).isVisible = true
+            else menu.getItem(0).isVisible = false
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        //TODO save pdf
+        return super.onOptionsItemSelected(item)
     }
 
 

@@ -17,4 +17,5 @@
     <string name="save">Save</string>
     <string name="card_desc">Card Description</string>
     <string name="fin_a_save">Finish and Save</string>
+    <string name="save_to_pdf">Export to PDF</string>
 </resources>
