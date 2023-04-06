@@ -178,6 +178,13 @@ class MainActivity : AppCompatActivity() {
                 val pageInfo = PageInfo.Builder(3508, 2480, 1).create()
                 val page = pdfDocument.startPage(pageInfo)
                 val canvas = page.canvas
+                val paint = Paint()
+                paint.color = Color.BLACK
+                paint.strokeWidth = 1F
+                canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
+                canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
+                canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
+                canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
                 for (c in 0..viewModel.selectedCards.size-1) {
                     val bitmap = viewModel.selectedCards.get(c).imageUri
                     if (bitmap != null) {
@@ -187,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                 pdfDocument.finishPage(page)
                 pdfDocument.writeTo(fileOutputStream)
                 pdfDocument.close()
-                Toast.makeText(this, "PDF Created", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "PDF Exported to Documents", Toast.LENGTH_SHORT).show()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -195,20 +202,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getOutputFile(): File? {
-        val root = File(getExternalFilesDir(null), "My PDF Folder")
+        val root = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PECS Creator")
         Log.d("ahoj", root.absolutePath)
         var isFolderCreated = true
         if (!root.exists()) {
             isFolderCreated = root.mkdir()
         }
         return if (isFolderCreated) {
-            Toast.makeText(this, "Folder is created", Toast.LENGTH_SHORT).show()
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-            val imageFileName = "PDF_$timeStamp"
+            val imageFileName = "PECS-Creator_$timeStamp"
             File(root, "$imageFileName.pdf")
 
         } else {
-            Toast.makeText(this, "Folder is not created", Toast.LENGTH_SHORT).show()
             null
         }
     }
