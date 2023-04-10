@@ -1,13 +1,12 @@
 package com.example.pecscreator
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfDocument.PageInfo
-import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -20,7 +19,6 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.size
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
@@ -137,6 +135,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.exportFab.setOnClickListener {
             createPDFWithMultipleImage()
+            resetSelection()
         }
 
         binding.deleteFab.setOnClickListener {
@@ -235,10 +234,12 @@ class MainActivity : AppCompatActivity() {
                 val paint = Paint()
                 paint.color = Color.BLACK
                 paint.strokeWidth = 1F
+                paint.textSize = 50F
                 canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
                 canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
                 canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
                 canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
+
                 for (c in 0..viewModel.selectedCards.size - 1) {
                     val bitmap = viewModel.selectedCards.get(c).imageUri
                     if (bitmap != null) {
@@ -253,8 +254,31 @@ class MainActivity : AppCompatActivity() {
                             ),
                             null
                         )
+
+                        val textpaint = Paint()
+                        val bounds = Rect()
+
+                        var text_height = 0
+                        var text_width = 0
+
+                        textpaint.typeface = Typeface.DEFAULT_BOLD // your preference here
+                        textpaint.textSize = 60f // have this the same as your text size
+
+
+                        val text = viewModel.selectedCards.get(c).description.uppercase(Locale.getDefault())
+                        textpaint.getTextBounds(text, 0, text.length, bounds);
+
+
+                        text_height = bounds.height()
+                        text_width = bounds.width()
+                        Log.d("ahoj", "${text_height}, ${text_width}")
+
+                        canvas.drawText(text,
+                            COORDINATES.get(c).first.toFloat() + 800 - text_width - ((800 - text_width) / 2F),
+                            COORDINATES.get(c).second + 900F, textpaint)
                     }
                 }
+
                 pdfDocument.finishPage(page)
                 pdfDocument.writeTo(fileOutputStream)
                 pdfDocument.close()
@@ -275,6 +299,7 @@ class MainActivity : AppCompatActivity() {
             isFolderCreated = root.mkdir()
         }
         return if (isFolderCreated) {
+            Toast.makeText(this, "File Created", Toast.LENGTH_SHORT).show()
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val imageFileName = "PECS-Creator_$timeStamp"
             File(root, "$imageFileName.pdf")
