@@ -1,19 +1,17 @@
 package com.example.pecscreator
 
 import android.graphics.Color
-import android.graphics.Typeface
-import android.media.Image
-import android.opengl.Visibility
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.view.marginEnd
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pecscreator.R.layout.card_item
+import java.util.Objects
+
 
 class CardsAdapter(private val allCards: List<Card>, private val viewModel: MainViewModel) :
     RecyclerView.Adapter<CardsAdapter.ViewHolder>() {
@@ -24,22 +22,40 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         return ViewHolder(view)
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    }
+
     override fun getItemCount() = allCards.size
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: List<Any>) {
+
         holder.tv.text = allCards.get(position).description
         holder.iv.setImageBitmap(allCards.get(position).imageUri)
 
-        holder.view.setOnLongClickListener {
-
-            if (addCardToList(allCards.get(position))) {
-                holder.ch.visibility = View.VISIBLE
-            } else {
-                holder.ch.visibility = View.GONE
+        if (!payloads.isEmpty()) {
+            for (a : Any in payloads) {
+                if (a.equals("RESET")) {
+                    holder.ch.visibility = View.GONE
+                    holder.iv.clearColorFilter()
+                }
             }
-            true
-        }
+        } else {
+            holder.tv.text = allCards.get(position).description
+            holder.iv.setImageBitmap(allCards.get(position).imageUri)
 
+            holder.view.setOnLongClickListener {
+                if (addCardToList(allCards.get(position))) {
+                    val greyFilter =
+                        PorterDuffColorFilter(Color.parseColor("#FF6F00"), PorterDuff.Mode.MULTIPLY)
+                    holder.iv.setColorFilter(greyFilter)
+                    holder.ch.visibility = View.VISIBLE
+                } else {
+                    holder.ch.visibility = View.GONE
+                    holder.iv.clearColorFilter()
+                }
+                true
+            }
+        }
 
     }
 

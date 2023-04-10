@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.size
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
@@ -207,7 +208,6 @@ class MainActivity : AppCompatActivity() {
         return super.onPrepareOptionsMenu(menu)
     }
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         resetSelection()
         return super.onOptionsItemSelected(item)
@@ -216,6 +216,11 @@ class MainActivity : AppCompatActivity() {
     private fun resetSelection() {
         viewModel.selectedCards = mutableListOf<Card>()
         viewModel.numOfCards.value = 0
+
+        binding.recyclerView.adapter?.itemCount?.let {
+            binding.recyclerView.adapter?.notifyItemRangeChanged(-1,
+                it, "RESET")
+        }
     }
 
     private fun createPDFWithMultipleImage() {
