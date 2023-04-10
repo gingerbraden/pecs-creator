@@ -90,7 +90,6 @@ class TakePhoto : AppCompatActivity() {
                         onImageSaved(output: ImageCapture.OutputFileResults){
 
                     val intent = Intent(this@TakePhoto, CreateCardActivity::class.java)
-                    Log.d("ahoj", name)
                     intent.putExtra("uri", output.savedUri)
                     intent.putExtra("name", name)
                     startActivity(intent)

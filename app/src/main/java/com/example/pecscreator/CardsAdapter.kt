@@ -31,6 +31,7 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         holder.iv.setImageBitmap(allCards.get(position).imageUri)
 
         holder.view.setOnLongClickListener {
+
             if (addCardToList(allCards.get(position))) {
                 holder.ch.visibility = View.VISIBLE
             } else {
@@ -38,6 +39,8 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
             }
             true
         }
+
+
     }
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -49,15 +52,11 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
     fun addCardToList(card : Card) : Boolean{
         if (!(card in viewModel.selectedCards)) {
             viewModel.selectedCards.add(card)
-            viewModel.selectionMode = true
             viewModel.numOfCards.value = viewModel.selectedCards.size
             return true
         } else {
             viewModel.selectedCards.remove(card)
             viewModel.numOfCards.value = viewModel.selectedCards.size
-            if (viewModel.selectedCards.isEmpty()) {
-                viewModel.selectionMode = false
-            }
             return false
          }
     }

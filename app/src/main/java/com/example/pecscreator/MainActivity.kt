@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfDocument.PageInfo
+import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -37,18 +38,48 @@ class MainActivity : AppCompatActivity() {
 
     // creating variable that handles Animations loading
     // and initializing it with animation files that we have created
-    private  val rotateOpen : Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.rotate_open_anim) }
-    private  val rotateClose : Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.rotate_close_anim) }
-    private  val fromBottom: Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.from_bottom_anim) }
-    private  val toBottom : Animation by lazy { AnimationUtils.loadAnimation(this,R.anim.to_bottom_anim) }
+    private val rotateOpen: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this,
+            R.anim.rotate_open_anim
+        )
+    }
+    private val rotateClose: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this,
+            R.anim.rotate_close_anim
+        )
+    }
+    private val fromBottom: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this,
+            R.anim.from_bottom_anim
+        )
+    }
+    private val toBottom: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            this,
+            R.anim.to_bottom_anim
+        )
+    }
+
     //used to check if fab menu are opened or closed
     private var closed = false
     private val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
-    private lateinit var db : CardsDatabase
-    private lateinit var dao : CardDao
+    private lateinit var db: CardsDatabase
+    private lateinit var dao: CardDao
 
-    private var COORDINATES = listOf<Pair<Int, Int>>(Pair(38, 38), Pair(913, 38), Pair(1778, 38), Pair(2653, 38), Pair(38, 1287), Pair(913, 1287), Pair(1778, 1287), Pair(2653, 1287))
+    private var COORDINATES = listOf<Pair<Int, Int>>(
+        Pair(38, 38),
+        Pair(913, 38),
+        Pair(1778, 38),
+        Pair(2653, 38),
+        Pair(38, 1287),
+        Pair(913, 1287),
+        Pair(1778, 1287),
+        Pair(2653, 1287)
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,34 +87,38 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-
         db = CardsDatabase.getInstance(this)
         dao = db.cardsDao()
         val all = dao.getAll()
 
-        // Create the observer which updates the UI.
-        val nameObserver = androidx.lifecycle.Observer<Int> {x ->
-//            if (x.equals(6)) {
-                invalidateOptionsMenu()
-//            }
+        val nameObserver = androidx.lifecycle.Observer<Int> { x ->
+            if (x in 1..8) {
+                binding.deleteFab.visibility = View.VISIBLE
+                binding.exportFab.visibility = View.VISIBLE
+                binding.mainButton.visibility = View.INVISIBLE
+            } else {
+                binding.deleteFab.visibility = View.INVISIBLE
+                binding.exportFab.visibility = View.INVISIBLE
+                binding.mainButton.visibility = View.VISIBLE
+            }
+            invalidateOptionsMenu()
         }
+
         viewModel.numOfCards.observe(this, nameObserver)
 
 
-
-
-        val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            // Callback is invoked after the user selects a media item or closes the
-            // photo picker.
-            if (uri != null) {
-
-                val intent = Intent(this@MainActivity, CreateCardActivity::class.java)
-                intent.putExtra("uri", uri)
-                intent.putExtra("name", "fromGallery-" + SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                    .format(System.currentTimeMillis()))
-                startActivity(intent)
+        val pickMedia =
+            registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                if (uri != null) {
+                    val intent = Intent(this@MainActivity, CreateCardActivity::class.java)
+                    intent.putExtra("uri", uri)
+                    intent.putExtra(
+                        "name", "fromGallery-" + SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                            .format(System.currentTimeMillis())
+                    )
+                    startActivity(intent)
+                }
             }
-        }
 
 
         binding.mainButton.setOnClickListener {
@@ -99,16 +134,35 @@ class MainActivity : AppCompatActivity() {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
+        binding.exportFab.setOnClickListener {
+            createPDFWithMultipleImage()
+        }
 
-
+        binding.deleteFab.setOnClickListener {
+            deleteSelection()
+            resetSelection()
+        }
 
         binding.recyclerView.apply {
-
             layoutManager = GridLayoutManager(this@MainActivity, 2)
             adapter = CardsAdapter(all, viewModel)
         }
 
 
+
+    }
+
+    private fun deleteSelection() {
+        db = CardsDatabase.getInstance(this)
+        dao = db.cardsDao()
+        for (c : Card in viewModel.selectedCards) {
+            dao.delete(c)
+        }
+
+        binding.recyclerView.apply {
+            layoutManager = GridLayoutManager(this@MainActivity, 2)
+            adapter = CardsAdapter(dao.getAll(), viewModel)
+        }
     }
 
     private fun OnAddButtonClick() {
@@ -117,26 +171,23 @@ class MainActivity : AppCompatActivity() {
         closed = !closed;
     }
 
-
-    private fun setAnimation(closed:Boolean) {
-        if(!closed){
+    private fun setAnimation(closed: Boolean) {
+        if (!closed) {
             binding.cameraButton.startAnimation(fromBottom)
             binding.galleryButton.startAnimation(fromBottom)
             binding.mainButton.startAnimation(rotateOpen)
-        }else{
+        } else {
             binding.cameraButton.startAnimation(toBottom)
             binding.galleryButton.startAnimation(toBottom)
             binding.mainButton.startAnimation(rotateClose)
         }
     }
 
-
-    private fun setVisibility(closed:Boolean) {
-        if(!closed)
-        {
+    private fun setVisibility(closed: Boolean) {
+        if (!closed) {
             binding.cameraButton.visibility = View.VISIBLE
             binding.galleryButton.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.cameraButton.visibility = View.INVISIBLE
             binding.galleryButton.visibility = View.INVISIBLE
         }
@@ -144,29 +195,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.pdf_menu, menu)
-        if (menu != null) {
-            Log.d("ahoj", "oncreate ${menu.getItem(0).isVisible}")
-        }
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (menu != null) {
-//            menu.getItem(0).isVisible = false
-            Log.d("ahoj", "onprepare ${menu.getItem(0).isVisible}, ${viewModel.numOfCards.value}")
-//            menu.getItem(0).isVisible = true
-            if (viewModel.numOfCards.value?.equals(6) == true) menu.getItem(0).isVisible = true
-            else menu.getItem(0).isVisible = false
+            menu.getItem(0).isVisible = viewModel.numOfCards.value?.compareTo(0)
+                ?.equals(1) == true && viewModel.numOfCards.value?.compareTo(9)
+                ?.equals(-1) == true
         }
         return super.onPrepareOptionsMenu(menu)
     }
 
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        //TODO save pdf
-        createPDFWithMultipleImage()
+        resetSelection()
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun resetSelection() {
+        viewModel.selectedCards = mutableListOf<Card>()
+        viewModel.numOfCards.value = 0
     }
 
     private fun createPDFWithMultipleImage() {
@@ -185,10 +234,20 @@ class MainActivity : AppCompatActivity() {
                 canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
                 canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
                 canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
-                for (c in 0..viewModel.selectedCards.size-1) {
+                for (c in 0..viewModel.selectedCards.size - 1) {
                     val bitmap = viewModel.selectedCards.get(c).imageUri
                     if (bitmap != null) {
-                        canvas.drawBitmap(bitmap, null, Rect(COORDINATES.get(c).first, COORDINATES.get(c).second, COORDINATES.get(c).first + 800, COORDINATES.get(c).second + 800), null)
+                        canvas.drawBitmap(
+                            bitmap,
+                            null,
+                            Rect(
+                                COORDINATES.get(c).first,
+                                COORDINATES.get(c).second,
+                                COORDINATES.get(c).first + 800,
+                                COORDINATES.get(c).second + 800
+                            ),
+                            null
+                        )
                     }
                 }
                 pdfDocument.finishPage(page)
@@ -202,8 +261,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getOutputFile(): File? {
-        val root = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PECS Creator")
-        Log.d("ahoj", root.absolutePath)
+        val root = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "PECS Creator"
+        )
         var isFolderCreated = true
         if (!root.exists()) {
             isFolderCreated = root.mkdir()
@@ -217,13 +278,6 @@ class MainActivity : AppCompatActivity() {
             null
         }
     }
-
-
-
-
-
-
-
 
 
 }

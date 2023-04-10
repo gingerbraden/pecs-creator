@@ -108,26 +108,6 @@ class CreateCardActivity : AppCompatActivity() {
 
         val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
-//        val file = File(dir, viewModel.savedPhotoName + "E.jpg")
-
-
-
-//        val resolver = application.contentResolver
-//        val imagesCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-//        val imageDetails = ContentValues().apply {
-//            put(MediaStore.Images.Media.DISPLAY_NAME, viewModel.savedPhotoName + "E.jpg")
-//            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-//            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "PECS Creator")
-//        }
-//        val imageUri = resolver.insert(imagesCollection, imageDetails)
-//        val outputStream = resolver.openOutputStream(imageUri!!)
-//        binding.cropImageView.getCroppedImage()?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-//        binding.cropImageView.getCroppedImage(1200, 1200)?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-
-//        outputStream?.flush()
-//        outputStream?.close()
-
-//        val card = Card(binding.textView.text.toString(), file.absolutePath)
         val card = Card(binding.textView.text.toString(), binding.cropImageView.getCroppedImage(1200, 1200))
 
         val db = CardsDatabase.getInstance(this)

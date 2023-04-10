@@ -19,5 +19,5 @@ interface CardDao {
     fun insert(card : Card)
 
     @Delete
-    fun delete(user: Card)
+    fun delete(card: Card)
 }

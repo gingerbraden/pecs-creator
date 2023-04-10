@@ -17,14 +17,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     lateinit var module : PyObject
 
 
-    var selectionMode = false;
     var selectedCards = mutableListOf<Card>()
 
     val numOfCards: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
-    }
-    fun ahoj() {
-
+        MutableLiveData<Int>(0)
     }
 
 
