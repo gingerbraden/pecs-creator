@@ -1,5 +1,6 @@
 package com.example.pecscreator
 
+import android.content.ClipData
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
@@ -10,6 +11,7 @@ import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,6 +21,7 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -70,16 +73,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var db: CardsDatabase
     private lateinit var dao: CardDao
 
-    private var COORDINATES = listOf<Pair<Int, Int>>(
-        Pair(38, 38),
-        Pair(913, 38),
-        Pair(1778, 38),
-        Pair(2653, 38),
-        Pair(38, 1287),
-        Pair(913, 1287),
-        Pair(1778, 1287),
-        Pair(2653, 1287)
-    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,29 +129,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.exportFab.setOnClickListener {
-            createPDFWithMultipleImage()
+            viewModel.createPDFWithMultipleImage()
             resetSelection()
 
             var photoURI : Uri? = null;
-            if (viewModel.pdfFile != null) {
+            if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
                 photoURI = FileProvider.getUriForFile(
                     applicationContext,
                     applicationContext.getPackageName() + ".provider",
                     viewModel.pdfFile!!
                 )
             }
+            if (photoURI != null) {
+                ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
+            }
 
-            val share = Intent(Intent.ACTION_SEND)
-            share.type = "document/pdf"
-
-            share.putExtra(
-                Intent.EXTRA_STREAM,
-                photoURI
-            )
-
-            startActivity(Intent.createChooser(share, "Share Document"))
-
-            viewModel.pdfFile?.delete()
+//            viewModel.pdfFile?.delete()
             viewModel.pdfFile = null
         }
 
@@ -245,92 +232,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createPDFWithMultipleImage() {
-            val file = getOutputFile()
-            if (file != null) {
-                try {
-                    val fileOutputStream = FileOutputStream(file)
-                    val pdfDocument = PdfDocument()
-                    val pageInfo = PageInfo.Builder(3508, 2480, 1).create()
-                    val page = pdfDocument.startPage(pageInfo)
-                    val canvas = page.canvas
-                    val paint = Paint()
-                    paint.color = Color.BLACK
-                    paint.strokeWidth = 1F
-                    paint.textSize = 50F
-                    canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
-                    canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
-                    canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
-                    canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
 
-                    for (c in 0..viewModel.selectedCards.size - 1) {
-                        val bitmap = viewModel.selectedCards.get(c).imageUri
-                        if (bitmap != null) {
-                            canvas.drawBitmap(
-                                bitmap,
-                                null,
-                                Rect(
-                                    COORDINATES.get(c).first,
-                                    COORDINATES.get(c).second,
-                                    COORDINATES.get(c).first + 800,
-                                    COORDINATES.get(c).second + 928
-                                ),
-                                null
-                            )
-
-                            val textpaint = Paint()
-                            val bounds = Rect()
-
-                            var text_width = 0
-
-                            textpaint.typeface = Typeface.DEFAULT_BOLD // your preference here
-                            textpaint.textSize = 60f // have this the same as your text size
-
-
-                            val text =
-                                viewModel.selectedCards.get(c).description.uppercase(Locale.getDefault())
-
-                            textpaint.getTextBounds(text, 0, text.length, bounds);
-
-                            text_width = bounds.width()
-
-                            canvas.drawText(
-                                text,
-                                COORDINATES.get(c).first.toFloat() + 800 - text_width - ((800 - text_width) / 2F),
-                                COORDINATES.get(c).second + 1028F, textpaint
-                            )
-                        }
-                    }
-
-                    pdfDocument.finishPage(page)
-                    pdfDocument.writeTo(fileOutputStream)
-                    pdfDocument.close()
-                    Toast.makeText(this, "PDF Exported to Documents", Toast.LENGTH_SHORT).show()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
-    }
-
-    private fun getOutputFile(): File? {
-        val root = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "PECS Creator"
-        )
-        var isFolderCreated = true
-        if (!root.exists()) {
-            isFolderCreated = root.mkdir()
-        }
-        return if (isFolderCreated) {
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-            val imageFileName = "PECS-Creator_$timeStamp"
-            var file = File(root, "$imageFileName.pdf")
-            viewModel.pdfFile = file
-            File(root, "$imageFileName.pdf")
-        } else {
-            null
-        }
-    }
 
 
 }
