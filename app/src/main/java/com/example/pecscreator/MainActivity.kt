@@ -7,9 +7,9 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfDocument.PageInfo
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,6 +19,7 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
@@ -136,6 +137,28 @@ class MainActivity : AppCompatActivity() {
         binding.exportFab.setOnClickListener {
             createPDFWithMultipleImage()
             resetSelection()
+
+            var photoURI : Uri? = null;
+            if (viewModel.pdfFile != null) {
+                photoURI = FileProvider.getUriForFile(
+                    applicationContext,
+                    applicationContext.getPackageName() + ".provider",
+                    viewModel.pdfFile!!
+                )
+            }
+
+            val share = Intent(Intent.ACTION_SEND)
+            share.type = "document/pdf"
+
+            share.putExtra(
+                Intent.EXTRA_STREAM,
+                photoURI
+            )
+
+            startActivity(Intent.createChooser(share, "Share Document"))
+
+            viewModel.pdfFile?.delete()
+            viewModel.pdfFile = null
         }
 
         binding.deleteFab.setOnClickListener {
@@ -144,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.recyclerView.apply {
-            layoutManager = GridLayoutManager(this@MainActivity, 2)
+            layoutManager = GridLayoutManager(this@MainActivity, 3)
             adapter = CardsAdapter(all, viewModel)
         }
 
@@ -160,7 +183,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.recyclerView.apply {
-            layoutManager = GridLayoutManager(this@MainActivity, 2)
+            layoutManager = GridLayoutManager(this@MainActivity, 3)
             adapter = CardsAdapter(dao.getAll(), viewModel)
         }
     }
@@ -223,70 +246,70 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createPDFWithMultipleImage() {
-        val file = getOutputFile()
-        if (file != null) {
-            try {
-                val fileOutputStream = FileOutputStream(file)
-                val pdfDocument = PdfDocument()
-                val pageInfo = PageInfo.Builder(3508, 2480, 1).create()
-                val page = pdfDocument.startPage(pageInfo)
-                val canvas = page.canvas
-                val paint = Paint()
-                paint.color = Color.BLACK
-                paint.strokeWidth = 1F
-                paint.textSize = 50F
-                canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
-                canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
-                canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
-                canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
+            val file = getOutputFile()
+            if (file != null) {
+                try {
+                    val fileOutputStream = FileOutputStream(file)
+                    val pdfDocument = PdfDocument()
+                    val pageInfo = PageInfo.Builder(3508, 2480, 1).create()
+                    val page = pdfDocument.startPage(pageInfo)
+                    val canvas = page.canvas
+                    val paint = Paint()
+                    paint.color = Color.BLACK
+                    paint.strokeWidth = 1F
+                    paint.textSize = 50F
+                    canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
+                    canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
+                    canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
+                    canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
 
-                for (c in 0..viewModel.selectedCards.size - 1) {
-                    val bitmap = viewModel.selectedCards.get(c).imageUri
-                    if (bitmap != null) {
-                        canvas.drawBitmap(
-                            bitmap,
-                            null,
-                            Rect(
-                                COORDINATES.get(c).first,
-                                COORDINATES.get(c).second,
-                                COORDINATES.get(c).first + 800,
-                                COORDINATES.get(c).second + 800
-                            ),
-                            null
-                        )
+                    for (c in 0..viewModel.selectedCards.size - 1) {
+                        val bitmap = viewModel.selectedCards.get(c).imageUri
+                        if (bitmap != null) {
+                            canvas.drawBitmap(
+                                bitmap,
+                                null,
+                                Rect(
+                                    COORDINATES.get(c).first,
+                                    COORDINATES.get(c).second,
+                                    COORDINATES.get(c).first + 800,
+                                    COORDINATES.get(c).second + 928
+                                ),
+                                null
+                            )
 
-                        val textpaint = Paint()
-                        val bounds = Rect()
+                            val textpaint = Paint()
+                            val bounds = Rect()
 
-                        var text_height = 0
-                        var text_width = 0
+                            var text_width = 0
 
-                        textpaint.typeface = Typeface.DEFAULT_BOLD // your preference here
-                        textpaint.textSize = 60f // have this the same as your text size
-
-
-                        val text = viewModel.selectedCards.get(c).description.uppercase(Locale.getDefault())
-                        textpaint.getTextBounds(text, 0, text.length, bounds);
+                            textpaint.typeface = Typeface.DEFAULT_BOLD // your preference here
+                            textpaint.textSize = 60f // have this the same as your text size
 
 
-                        text_height = bounds.height()
-                        text_width = bounds.width()
-                        Log.d("ahoj", "${text_height}, ${text_width}")
+                            val text =
+                                viewModel.selectedCards.get(c).description.uppercase(Locale.getDefault())
 
-                        canvas.drawText(text,
-                            COORDINATES.get(c).first.toFloat() + 800 - text_width - ((800 - text_width) / 2F),
-                            COORDINATES.get(c).second + 900F, textpaint)
+                            textpaint.getTextBounds(text, 0, text.length, bounds);
+
+                            text_width = bounds.width()
+
+                            canvas.drawText(
+                                text,
+                                COORDINATES.get(c).first.toFloat() + 800 - text_width - ((800 - text_width) / 2F),
+                                COORDINATES.get(c).second + 1028F, textpaint
+                            )
+                        }
                     }
-                }
 
-                pdfDocument.finishPage(page)
-                pdfDocument.writeTo(fileOutputStream)
-                pdfDocument.close()
-                Toast.makeText(this, "PDF Exported to Documents", Toast.LENGTH_SHORT).show()
-            } catch (e: IOException) {
-                e.printStackTrace()
+                    pdfDocument.finishPage(page)
+                    pdfDocument.writeTo(fileOutputStream)
+                    pdfDocument.close()
+                    Toast.makeText(this, "PDF Exported to Documents", Toast.LENGTH_SHORT).show()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
-        }
     }
 
     private fun getOutputFile(): File? {
@@ -299,11 +322,11 @@ class MainActivity : AppCompatActivity() {
             isFolderCreated = root.mkdir()
         }
         return if (isFolderCreated) {
-            Toast.makeText(this, "File Created", Toast.LENGTH_SHORT).show()
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val imageFileName = "PECS-Creator_$timeStamp"
+            var file = File(root, "$imageFileName.pdf")
+            viewModel.pdfFile = file
             File(root, "$imageFileName.pdf")
-
         } else {
             null
         }

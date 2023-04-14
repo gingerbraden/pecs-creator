@@ -9,7 +9,7 @@ import com.example.pecscreator.Card
 @Dao
 interface CardDao {
 
-    @Query("SELECT * FROM cards")
+    @Query("SELECT * FROM cards ORDER BY description")
     fun getAll(): List<Card>
 
     @Query("SELECT * FROM cards WHERE id=:id")

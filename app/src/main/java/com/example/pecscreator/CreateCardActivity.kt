@@ -68,7 +68,7 @@ class CreateCardActivity : AppCompatActivity() {
 
 
         binding.cropImageView.setImageUriAsync(viewModel.savedPhotoUri)
-        binding.cropImageView.setAspectRatio(1, 1)
+        binding.cropImageView.setAspectRatio(600, 700)
         oldRect = binding.cropImageView.cropRect
 
 
@@ -76,7 +76,6 @@ class CreateCardActivity : AppCompatActivity() {
             if (coords.isNotEmpty()) {
                 binding.cropImageView.resetCropRect()
                 binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[3])
-//                binding.cropImageView.setImageBitmap(editedBmp)
             }
         }
 
@@ -84,7 +83,6 @@ class CreateCardActivity : AppCompatActivity() {
             rotateImageAndCoordinates()
         }
 
-        //TODO not working with autocrop
         binding.resetButton.setOnClickListener {
             binding.cropImageView.cropRect = oldRect
             binding.cropImageView.resetCropRect()
@@ -108,7 +106,7 @@ class CreateCardActivity : AppCompatActivity() {
 
         val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
-        val card = Card(binding.textView.text.toString(), binding.cropImageView.getCroppedImage(1200, 1200))
+        val card = Card(binding.textView.text.toString(), binding.cropImageView.getCroppedImage(600, 700))
 
         val db = CardsDatabase.getInstance(this)
         val dao = db.cardsDao()
