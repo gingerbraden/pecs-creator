@@ -48,10 +48,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val fileOutputStream = FileOutputStream(file)
                 val pdfDocument = PdfDocument()
-                val pageInfo = PdfDocument.PageInfo.Builder(3508, 2480, 1).create()
-                val page = pdfDocument.startPage(pageInfo)
-                val canvas = page.canvas
-                val paint = Paint()
+                var pageInfo = PdfDocument.PageInfo.Builder(3508, 2480, 1).create()
+                var page = pdfDocument.startPage(pageInfo)
+                var canvas = page.canvas
+                var paint = Paint()
                 paint.color = Color.BLACK
                 paint.strokeWidth = 1F
                 paint.textSize = 50F
@@ -61,16 +61,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
 
                 for (c in 0..selectedCards.size - 1) {
+
+                    if (c != 0 && c % 8 == 0) {
+                        pdfDocument.finishPage(page)
+                        pageInfo = PdfDocument.PageInfo.Builder(3508, 2480, 1).create()
+                        page = pdfDocument.startPage(pageInfo)
+                        canvas = page.canvas
+                        paint = Paint()
+                        paint.color = Color.BLACK
+                        paint.strokeWidth = 1F
+                        paint.textSize = 50F
+                        canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
+                        canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
+                        canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
+                        canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
+                    }
+
                     val bitmap = selectedCards.get(c).imageUri
                     if (bitmap != null) {
                         canvas.drawBitmap(
                             bitmap,
                             null,
                             Rect(
-                                COORDINATES.get(c).first,
-                                COORDINATES.get(c).second,
-                                COORDINATES.get(c).first + 800,
-                                COORDINATES.get(c).second + 928
+                                COORDINATES.get(c%8).first,
+                                COORDINATES.get(c%8).second,
+                                COORDINATES.get(c%8).first + 800,
+                                COORDINATES.get(c%8).second + 928
                             ),
                             null
                         )
@@ -95,14 +111,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                             textpaint.getTextBounds(text1, 0, text1.length, bounds);
                             text_width = bounds.width()
-                            drawText(canvas, text1, 1028F, text_width, textpaint, c)
+                            drawText(canvas, text1, 1028F, text_width, textpaint, c%8)
 
                             textpaint.getTextBounds(text2, 0, text2.length, bounds);
                             text_width = bounds.width()
-                            drawText(canvas, text2, 1100F, text_width, textpaint, c)
+                            drawText(canvas, text2, 1100F, text_width, textpaint, c%8)
 
                         } else {
-                            drawText(canvas, text, 1028F, text_width, textpaint, c)
+                            drawText(canvas, text, 1028F, text_width, textpaint, c%8)
                         }
 
                     }

@@ -144,7 +144,7 @@ class TakePhoto : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExecutor.shutdown()
+//        cameraExecutor.shutdown()
     }
 
     companion object {

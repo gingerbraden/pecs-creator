@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         val all = dao.getAll()
 
         val nameObserver = androidx.lifecycle.Observer<Int> { x ->
-            if (x in 1..8) {
+            if (x >= 1) {
                 binding.deleteFab.visibility = View.VISIBLE
                 binding.exportFab.visibility = View.VISIBLE
                 binding.mainButton.visibility = View.INVISIBLE
@@ -211,8 +211,9 @@ class MainActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         if (menu != null) {
             menu.getItem(0).isVisible = viewModel.numOfCards.value?.compareTo(0)
-                ?.equals(1) == true && viewModel.numOfCards.value?.compareTo(9)
-                ?.equals(-1) == true
+                ?.equals(1) == true
+//                    && viewModel.numOfCards.value?.compareTo(9)
+//                ?.equals(-1) == true
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -226,9 +227,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.selectedCards = mutableListOf<Card>()
         viewModel.numOfCards.value = 0
 
+
         binding.recyclerView.adapter?.itemCount?.let {
             binding.recyclerView.adapter?.notifyItemRangeChanged(-1,
-                it, "RESET")
+                it + 1, "RESET")
         }
     }
 

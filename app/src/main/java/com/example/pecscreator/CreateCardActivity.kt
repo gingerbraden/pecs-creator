@@ -1,6 +1,5 @@
 package com.example.pecscreator
 
-import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
@@ -19,7 +18,6 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.pecscreator.databinding.ActivityCreateCardBinding
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -117,6 +115,7 @@ class CreateCardActivity : AppCompatActivity() {
 
 
         val intent = Intent(this@CreateCardActivity, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
         return super.onOptionsItemSelected(item)
     }

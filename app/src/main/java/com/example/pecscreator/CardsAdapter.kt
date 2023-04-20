@@ -35,6 +35,7 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         if (!payloads.isEmpty()) {
             for (a : Any in payloads) {
                 if (a.equals("RESET")) {
+                    Log.d("ahoj", holder.tv.text.toString())
                     holder.ch.visibility = View.GONE
                     holder.iv.clearColorFilter()
                 }
