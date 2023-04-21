@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -62,7 +63,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var db: CardsDatabase
     private lateinit var dao: CardDao
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,50 +120,43 @@ class MainActivity : AppCompatActivity() {
 
         binding.exportFab.setOnClickListener {
 
-            val numbers = arrayOf("4", "6", "8")
+            val numbers = arrayOf("4", "8")
+            val builder = MaterialAlertDialogBuilder(this)
 
-            val builder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(this)
             builder.setTitle("Number of cards on a single page")
-            builder.setItems(numbers, DialogInterface.OnClickListener { dialog, which ->
 
-                viewModel.numberOfCardsOnSinglePage = numbers.get(which).toInt()
+            builder.setNegativeButton("Cancel") { _, _ ->
+                resetSelection()
+                viewModel.numberOfCardsOnSinglePage = 0
+            }
+
+            builder.setPositiveButton("OK") { _, _ ->
+                //TODO AK NEMA NIC SELECTUNTE
                 viewModel.createPDFWithMultipleImage()
                 resetSelection()
 
-                var photoURI : Uri? = null;
+                var photoURI: Uri? = null;
                 if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
                     photoURI = FileProvider.getUriForFile(
                         applicationContext,
-                        applicationContext.getPackageName() + ".provider",
+                        applicationContext.packageName + ".provider",
                         viewModel.pdfFile!!
                     )
                 }
                 if (photoURI != null) {
-                    ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
+                    ShareCompat.IntentBuilder.from(this).setType("application/pdf")
+                        .addStream(photoURI).startChooser()
                 }
 
-    //            viewModel.pdfFile?.delete()
+                //            viewModel.pdfFile?.delete()
                 viewModel.pdfFile = null
-            })
-            builder.show()
+            }
 
-//            viewModel.createPDFWithMultipleImage()
-//            resetSelection()
-//
-//            var photoURI : Uri? = null;
-//            if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
-//                photoURI = FileProvider.getUriForFile(
-//                    applicationContext,
-//                    applicationContext.getPackageName() + ".provider",
-//                    viewModel.pdfFile!!
-//                )
-//            }
-//            if (photoURI != null) {
-//                ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
-//            }
-//
-////            viewModel.pdfFile?.delete()
-//            viewModel.pdfFile = null
+            builder.setSingleChoiceItems(numbers, -1) { _, which ->
+                viewModel.numberOfCardsOnSinglePage = numbers[which].toInt()
+            }
+            
+            builder.show()
         }
 
         binding.deleteFab.setOnClickListener {
@@ -177,13 +170,12 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
     }
 
     private fun deleteSelection() {
         db = CardsDatabase.getInstance(this)
         dao = db.cardsDao()
-        for (c : Card in viewModel.selectedCards) {
+        for (c: Card in viewModel.selectedCards) {
             dao.delete(c)
         }
 
@@ -247,12 +239,12 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.recyclerView.adapter?.itemCount?.let {
-            binding.recyclerView.adapter?.notifyItemRangeChanged(-1,
-                it + 1, "RESET")
+            binding.recyclerView.adapter?.notifyItemRangeChanged(
+                -1,
+                it + 1, "RESET"
+            )
         }
     }
-
-
 
 
 }

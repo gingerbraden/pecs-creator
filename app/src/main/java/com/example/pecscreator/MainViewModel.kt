@@ -41,20 +41,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Pair(2653, 1287)
     )
 
-    private var COORDINATES_SIX = listOf<Pair<Int, Int>>(
-        Pair(38, 38),
-        Pair(913, 38),
-        Pair(1778, 38),
-        Pair(2653, 38),
-        Pair(38, 1287),
-        Pair(913, 1287),
-    )
-
     private var COORDINATES_FOUR = listOf<Pair<Int, Int>>(
         Pair(38, 38),
-        Pair(913, 38),
-        Pair(1778, 38),
-        Pair(2653, 38),
+        Pair(1280, 38),
+        Pair(38, 1792),
+        Pair(1280, 1792)
     )
 
     fun createPDFWithMultipleImage() {
@@ -63,7 +54,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val fileOutputStream = FileOutputStream(file)
                 val pdfDocument = PdfDocument()
-                var pageInfo = PdfDocument.PageInfo.Builder(3508, 2480, 1).create()
+                var pageInfo = PageInfo.Builder(3508, 2480, 1).create()
+                if (numberOfCardsOnSinglePage == 8){
+                    pageInfo = PageInfo.Builder(3508, 2480, 1).create()
+                }
+                if (numberOfCardsOnSinglePage == 4){
+                    pageInfo = PageInfo.Builder(2480, 3508, 1).create()
+                }
                 var page = pdfDocument.startPage(pageInfo)
                 var canvas = page.canvas
                 var paint = Paint()
@@ -77,27 +74,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 for (c in 0..selectedCards.size - 1) {
 
-                    if (c != 0 && c % 8 == 0) {
+                    if (c != 0 && c % numberOfCardsOnSinglePage == 0) {
                         pdfDocument.finishPage(page)
-                        pageInfo = PdfDocument.PageInfo.Builder(3508, 2480, 1).create()
-                        page = pdfDocument.startPage(pageInfo)
-                        canvas = page.canvas
-                        drawBoundariesForEightCards(canvas, paint)
+                        if (numberOfCardsOnSinglePage == 8){
+                            pageInfo = PageInfo.Builder(3508, 2480, 1).create()
+                            page = pdfDocument.startPage(pageInfo)
+                            canvas = page.canvas
+                            drawBoundariesForEightCards(canvas, paint)
+                        }
+                        if (numberOfCardsOnSinglePage == 4){
+                            pageInfo = PageInfo.Builder(2480, 3508, 1).create()
+                            page = pdfDocument.startPage(pageInfo)
+                            canvas = page.canvas
+                            drawBoundariesForFourCards(canvas, paint)
+                        }
                     }
 
                     val bitmap = selectedCards.get(c).imageUri
                     if (bitmap != null) {
-                        canvas.drawBitmap(
-                            bitmap,
-                            null,
-                            Rect(
-                                COORDINATES_EIGHT.get(c%8).first,
-                                COORDINATES_EIGHT.get(c%8).second,
-                                COORDINATES_EIGHT.get(c%8).first + 800,
-                                COORDINATES_EIGHT.get(c%8).second + 928
-                            ),
-                            null
-                        )
+                        if (numberOfCardsOnSinglePage == 8){
+                            canvas.drawBitmap(
+                                bitmap,
+                                null,
+                                Rect(
+                                    COORDINATES_EIGHT.get(c%numberOfCardsOnSinglePage).first,
+                                    COORDINATES_EIGHT.get(c%numberOfCardsOnSinglePage).second,
+                                    COORDINATES_EIGHT.get(c%numberOfCardsOnSinglePage).first + 800,
+                                    COORDINATES_EIGHT.get(c%numberOfCardsOnSinglePage).second + 928
+                                ),
+                                null
+                            )
+                        }
+                        if (numberOfCardsOnSinglePage == 4){
+                            canvas.drawBitmap(
+                                bitmap,
+                                null,
+                                Rect(
+                                    COORDINATES_FOUR.get(c%numberOfCardsOnSinglePage).first,
+                                    COORDINATES_FOUR.get(c%numberOfCardsOnSinglePage).second,
+                                    COORDINATES_FOUR.get(c%numberOfCardsOnSinglePage).first + 1166,
+                                    COORDINATES_FOUR.get(c%numberOfCardsOnSinglePage).second + 1352
+                                ),
+                                null
+                            )
+                        }
+
 
                         val textpaint = Paint()
                         val bounds = Rect()
@@ -151,6 +172,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
         canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
         canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
+    }
+
+    private fun drawBoundariesForFourCards(canvas: Canvas, paint: Paint) {
+        canvas.drawLine(1240.5F, 0F, 1240.5F, 3508F, paint)
+        canvas.drawLine(0F, 1754F, 2480F, 1754F, paint)
     }
 
     private fun drawText(canvas : Canvas, string : String, pos : Float, text_width : Int, textpaint : Paint, c : Int) {
