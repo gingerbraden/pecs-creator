@@ -1,23 +1,15 @@
 package com.example.pecscreator
 
-import android.content.ClipData
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.Typeface
-import android.graphics.pdf.PdfDocument
-import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -26,9 +18,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -129,23 +119,51 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.exportFab.setOnClickListener {
-            viewModel.createPDFWithMultipleImage()
-            resetSelection()
 
-            var photoURI : Uri? = null;
-            if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
-                photoURI = FileProvider.getUriForFile(
-                    applicationContext,
-                    applicationContext.getPackageName() + ".provider",
-                    viewModel.pdfFile!!
-                )
-            }
-            if (photoURI != null) {
-                ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
-            }
+            val numbers = arrayOf("4", "6", "8")
 
-//            viewModel.pdfFile?.delete()
-            viewModel.pdfFile = null
+            val builder: MaterialAlertDialogBuilder = MaterialAlertDialogBuilder(this)
+            builder.setTitle("Number of cards on a single page")
+            builder.setItems(numbers, DialogInterface.OnClickListener { dialog, which ->
+
+                viewModel.numberOfCardsOnSinglePage = numbers.get(which).toInt()
+                viewModel.createPDFWithMultipleImage()
+                resetSelection()
+
+                var photoURI : Uri? = null;
+                if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
+                    photoURI = FileProvider.getUriForFile(
+                        applicationContext,
+                        applicationContext.getPackageName() + ".provider",
+                        viewModel.pdfFile!!
+                    )
+                }
+                if (photoURI != null) {
+                    ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
+                }
+
+    //            viewModel.pdfFile?.delete()
+                viewModel.pdfFile = null
+            })
+            builder.show()
+
+//            viewModel.createPDFWithMultipleImage()
+//            resetSelection()
+//
+//            var photoURI : Uri? = null;
+//            if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
+//                photoURI = FileProvider.getUriForFile(
+//                    applicationContext,
+//                    applicationContext.getPackageName() + ".provider",
+//                    viewModel.pdfFile!!
+//                )
+//            }
+//            if (photoURI != null) {
+//                ShareCompat.IntentBuilder.from(this).setType("application/pdf").addStream(photoURI).startChooser()
+//            }
+//
+////            viewModel.pdfFile?.delete()
+//            viewModel.pdfFile = null
         }
 
         binding.deleteFab.setOnClickListener {
