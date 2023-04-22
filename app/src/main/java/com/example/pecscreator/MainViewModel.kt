@@ -3,7 +3,6 @@ package com.example.pecscreator
 import android.app.Application
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import android.graphics.pdf.PdfDocument.Page
 import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
 import android.os.Environment
@@ -15,15 +14,14 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    lateinit var savedPhotoUri : Uri
-    lateinit var savedPhotoName : String
-    lateinit var module : PyObject
-    var pdfFile : File? = null
-    var numberOfCardsOnSinglePage : Int = 0
+    lateinit var savedPhotoUri: Uri
+    lateinit var savedPhotoName: String
+    lateinit var module: PyObject
+    var pdfFile: File? = null
+    var numberOfCardsOnSinglePage: Int = 0
 
     var selectedCards = mutableListOf<Card>()
 
@@ -31,7 +29,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         MutableLiveData<Int>(0)
     }
 
-    private var COORDINATES_EIGHT = listOf<Pair<Int, Int>>(
+    lateinit var canvas: Canvas
+
+    private var COORDINATES_EIGHT = listOf(
         Pair(38, 38),
         Pair(913, 38),
         Pair(1778, 38),
@@ -42,7 +42,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Pair(2653, 1287)
     )
 
-    private var COORDINATES_FOUR = listOf<Pair<Int, Int>>(
+    private var COORDINATES_FOUR = listOf(
         Pair(38, 38),
         Pair(1280, 38),
         Pair(38, 1792),
@@ -57,49 +57,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val pdfDocument = PdfDocument()
                 var pageInfo = initializePageInfo()
                 var page = pdfDocument.startPage(pageInfo)
-                var canvas = page.canvas
+                canvas = page.canvas
                 val paint = Paint()
 
                 paint.color = Color.BLACK
                 paint.strokeWidth = 1F
                 paint.textSize = 50F
 
-                drawBoundaries(canvas, paint)
+                drawBoundaries(paint)
 
                 for (c in 0..selectedCards.size - 1) {
 
                     if (c != 0 && c % numberOfCardsOnSinglePage == 0) {
                         pdfDocument.finishPage(page)
-                        pageInfo =  initializePageInfo()
+                        pageInfo = initializePageInfo()
                         page = pdfDocument.startPage(pageInfo)
                         canvas = page.canvas
-                        drawBoundaries(canvas, paint)
+                        drawBoundaries(paint)
                     }
 
                     val bitmap = selectedCards.get(c).imageUri
                     if (bitmap != null) {
 
                         when (numberOfCardsOnSinglePage) {
-                            8 -> drawImage(canvas, bitmap, c, COORDINATES_EIGHT, 800, 928)
-                            4 -> drawImage(canvas, bitmap, c, COORDINATES_FOUR, 1166, 1352)
+                            8 -> drawImage(bitmap, c, COORDINATES_EIGHT, 800, 928)
+                            4 -> drawImage(bitmap, c, COORDINATES_FOUR, 1166, 1352)
                         }
 
-                        val textpaint = Paint()
-                        val bounds = Rect()
-                        var text_width = 0
-                        textpaint.typeface = Typeface.DEFAULT_BOLD
-                        textpaint.textSize = 60f
-
-                        val text = selectedCards.get(c).description.uppercase(Locale.getDefault())
-
-                        textpaint.getTextBounds(text, 0, text.length, bounds);
-                        text_width = bounds.width()
-
-                        if (text_width > 800 && text_width < 1600) {
-                            drawTextTwoLines(text, textpaint, text_width, bounds, canvas, c)
-                        } else {
-                            drawText(canvas, text, 1028F, text_width, textpaint, c%8)
-                        }
+                        drawTextForAll(c)
 
                     }
                 }
@@ -114,7 +99,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun initializePageInfo() : PageInfo? {
+    private fun initializePageInfo(): PageInfo? {
         return when (numberOfCardsOnSinglePage) {
             8 -> PageInfo.Builder(3508, 2480, 1).create()
             4 -> PageInfo.Builder(2480, 3508, 1).create()
@@ -122,61 +107,167 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun drawTextForAll(c: Int) {
+        val textpaint = Paint()
+        val bounds = Rect()
+        var text_width = 0
+        textpaint.typeface = Typeface.DEFAULT_BOLD
+        textpaint.textSize = 60f
 
-    private fun drawTextTwoLines(text : String, textpaint: Paint, tx_wt: Int, bounds : Rect, canvas: Canvas, c: Int) {
-        var text_width = tx_wt
-        val listOfWords = text.split(" ")
-        val text1 = listOfWords.subList(0, listOfWords.size/2 + 1).joinToString(" ")
-        val text2 = listOfWords.subList(listOfWords.size/2+1, listOfWords.size).joinToString(" ")
+        val text = selectedCards.get(c).description.uppercase(Locale.getDefault())
 
-        textpaint.getTextBounds(text1, 0, text1.length, bounds);
+        textpaint.getTextBounds(text, 0, text.length, bounds)
         text_width = bounds.width()
-        drawText(canvas, text1, 1028F, text_width, textpaint, c%8)
 
-        textpaint.getTextBounds(text2, 0, text2.length, bounds);
-        text_width = bounds.width()
-        drawText(canvas, text2, 1100F, text_width, textpaint, c%8)
+        when (numberOfCardsOnSinglePage) {
+            8 -> {
+                if (text_width > 800) {
+                    drawTextTwoLines(
+                        text,
+                        textpaint,
+                        text_width,
+                        bounds,
+                        c,
+                        1028F,
+                        1100F,
+                        800,
+                        COORDINATES_EIGHT
+                    )
+                } else {
+                    drawText(
+                        text,
+                        1028F,
+                        text_width,
+                        textpaint,
+                        c % numberOfCardsOnSinglePage,
+                        800,
+                        COORDINATES_EIGHT
+                    )
+                }
+            }
+            4 -> {
+                if (text_width > 1166) {
+                    drawTextTwoLines(
+                        text,
+                        textpaint,
+                        text_width,
+                        bounds,
+                        c,
+                        1450F,
+                        1520F,
+                        1166,
+                        COORDINATES_FOUR
+                    )
+                } else {
+                    drawText(
+                        text,
+                        1450F,
+                        text_width,
+                        textpaint,
+                        c % numberOfCardsOnSinglePage,
+                        1166,
+                        COORDINATES_FOUR
+                    )
+                }
+            }
+        }
     }
 
-    private fun drawImage(canvas: Canvas, bitmap : Bitmap, c : Int, coordinates : List<Pair<Int, Int>>, xplus : Int, yplus : Int) {
+    private fun drawTextTwoLines(
+        text: String,
+        textpaint: Paint,
+        tx_wt: Int,
+        bounds: Rect,
+        c: Int,
+        posFirst: Float,
+        posSecond: Float,
+        imageWidth: Int,
+        coordinates: List<Pair<Int, Int>>
+    ) {
+        var text_width = tx_wt
+        val listOfWords = text.split(" ")
+        val text1 = listOfWords.subList(0, listOfWords.size / 2 + 1).joinToString(" ")
+        val text2 =
+            listOfWords.subList(listOfWords.size / 2 + 1, listOfWords.size).joinToString(" ")
+
+        textpaint.getTextBounds(text1, 0, text1.length, bounds)
+        text_width = bounds.width()
+        drawText(
+            text1,
+            posFirst,
+            text_width,
+            textpaint,
+            c % numberOfCardsOnSinglePage,
+            imageWidth,
+            coordinates
+        )
+
+        textpaint.getTextBounds(text2, 0, text2.length, bounds)
+        text_width = bounds.width()
+        drawText(
+            text2,
+            posSecond,
+            text_width,
+            textpaint,
+            c % numberOfCardsOnSinglePage,
+            imageWidth,
+            coordinates
+        )
+    }
+
+    private fun drawText(
+        string: String,
+        pos: Float,
+        text_width: Int,
+        textpaint: Paint,
+        c: Int,
+        imageWidth: Int,
+        coordinates: List<Pair<Int, Int>>
+    ) {
+        canvas.drawText(
+            string,
+            coordinates.get(c).first.toFloat() + imageWidth - text_width - ((imageWidth - text_width) / 2F),
+            coordinates.get(c).second + pos, textpaint
+        )
+    }
+
+    private fun drawImage(
+        bitmap: Bitmap,
+        c: Int,
+        coordinates: List<Pair<Int, Int>>,
+        xplus: Int,
+        yplus: Int
+    ) {
         canvas.drawBitmap(
             bitmap,
             null,
             Rect(
-                coordinates.get(c%numberOfCardsOnSinglePage).first,
-                coordinates.get(c%numberOfCardsOnSinglePage).second,
-                coordinates.get(c%numberOfCardsOnSinglePage).first + xplus,
-                coordinates.get(c%numberOfCardsOnSinglePage).second + yplus
+                coordinates.get(c % numberOfCardsOnSinglePage).first,
+                coordinates.get(c % numberOfCardsOnSinglePage).second,
+                coordinates.get(c % numberOfCardsOnSinglePage).first + xplus,
+                coordinates.get(c % numberOfCardsOnSinglePage).second + yplus
             ),
             null
         )
     }
 
-    private fun drawBoundaries(canvas: Canvas, paint: Paint) {
+    private fun drawBoundaries(paint: Paint) {
         when (numberOfCardsOnSinglePage) {
-            8 -> drawBoundariesForEightCards(canvas, paint)
-            4 -> drawBoundariesForFourCards(canvas, paint)
+            8 -> drawBoundariesForEightCards(paint)
+            4 -> drawBoundariesForFourCards(paint)
         }
     }
 
-    private fun drawBoundariesForEightCards(canvas: Canvas, paint: Paint) {
+    private fun drawBoundariesForEightCards(paint: Paint) {
         canvas.drawLine(875.5F, 0F, 875.5F, 2480F, paint)
         canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
         canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
         canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
     }
 
-    private fun drawBoundariesForFourCards(canvas: Canvas, paint: Paint) {
+    private fun drawBoundariesForFourCards(paint: Paint) {
         canvas.drawLine(1240.5F, 0F, 1240.5F, 3508F, paint)
         canvas.drawLine(0F, 1754F, 2480F, 1754F, paint)
-    }
-
-    private fun drawText(canvas : Canvas, string : String, pos : Float, text_width : Int, textpaint : Paint, c : Int) {
-        canvas.drawText(
-            string,
-            COORDINATES_EIGHT.get(c).first.toFloat() + 800 - text_width - ((800 - text_width) / 2F),
-            COORDINATES_EIGHT.get(c).second + pos, textpaint
-        )
     }
 
     private fun getOutputFile(): File? {
@@ -198,10 +289,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             null
         }
     }
-
-
-
-
 
 
 }
