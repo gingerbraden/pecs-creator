@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
             builder.setSingleChoiceItems(numbers, -1) { _, which ->
                 viewModel.numberOfCardsOnSinglePage = numbers[which].toInt()
             }
-            
+
             builder.show()
         }
 
