@@ -1,16 +1,14 @@
 package com.example.pecscreator
 
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +17,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.pecscreator.databinding.ActivityMainBinding
+import com.example.pecscreator.tutorial.TutorialActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.SimpleDateFormat
 import java.util.*
@@ -58,11 +57,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     //used to check if fab menu are opened or closed
-    private var closed = false
+    private var closed = true
     private val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
     private lateinit var db: CardsDatabase
     private lateinit var dao: CardDao
+
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,25 +73,36 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
+        val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
+        if (!sharedPreferences.contains("launched")) {
+            sharedPreferences.edit().putString("launched", "yes").apply()
+            val intent = Intent(this@MainActivity, TutorialActivity::class.java)
+            startActivity(intent)
+        }
+
         db = CardsDatabase.getInstance(this)
         dao = db.cardsDao()
         val all = dao.getAll()
 
         val nameObserver = androidx.lifecycle.Observer<Int> { x ->
+            clearAnimation()
             if (x >= 1) {
+//                OnAddButtonClick()
                 binding.deleteFab.visibility = View.VISIBLE
                 binding.exportFab.visibility = View.VISIBLE
-                binding.mainButton.visibility = View.INVISIBLE
+                binding.mainButton.visibility = View.GONE
+                binding.cameraButton.visibility = View.GONE
+                binding.galleryButton.visibility = View.GONE
             } else {
-                binding.deleteFab.visibility = View.INVISIBLE
-                binding.exportFab.visibility = View.INVISIBLE
+                if (closed == true) closed = !closed
+                binding.deleteFab.visibility = View.GONE
+                binding.exportFab.visibility = View.GONE
                 binding.mainButton.visibility = View.VISIBLE
             }
             invalidateOptionsMenu()
         }
 
         viewModel.numOfCards.observe(this, nameObserver)
-
 
         val pickMedia =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -100,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                         "name", "fromGallery-" + SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                             .format(System.currentTimeMillis())
                     )
+                    Thread.sleep(200)
                     startActivity(intent)
                 }
             }
@@ -148,7 +162,6 @@ class MainActivity : AppCompatActivity() {
                         .addStream(photoURI).startChooser()
                 }
 
-                //            viewModel.pdfFile?.delete()
                 viewModel.pdfFile = null
             }
 
@@ -160,8 +173,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.deleteFab.setOnClickListener {
-            deleteSelection()
-            resetSelection()
+
+            val builder = MaterialAlertDialogBuilder(this@MainActivity)
+            builder.setMessage("Are you sure you want to Delete?")
+                .setCancelable(false)
+                .setPositiveButton("Yes") { dialog, id ->
+                    deleteSelection()
+                    resetSelection()
+                }
+                .setNegativeButton("No") { dialog, id ->
+                    // Dismiss the dialog
+                    dialog.dismiss()
+                }
+            val alert = builder.create()
+            alert.show()
+
+
+
         }
 
         binding.recyclerView.apply {
@@ -169,6 +197,21 @@ class MainActivity : AppCompatActivity() {
             adapter = CardsAdapter(all, viewModel)
         }
 
+
+    }
+
+    override fun onBackPressed() {
+        if (viewModel.selectedCards.size >= 1) {
+            if (closed == true) closed = !closed
+            binding.deleteFab.visibility = View.GONE
+            binding.exportFab.visibility = View.GONE
+            binding.mainButton.visibility = View.VISIBLE
+            invalidateOptionsMenu()
+            resetSelection()
+        } else {
+
+            super.onBackPressed()
+        }
 
     }
 
@@ -203,13 +246,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun clearAnimation() {
+        binding.cameraButton.clearAnimation()
+        binding.galleryButton.clearAnimation()
+        binding.mainButton.clearAnimation()
+    }
+
     private fun setVisibility(closed: Boolean) {
         if (!closed) {
             binding.cameraButton.visibility = View.VISIBLE
             binding.galleryButton.visibility = View.VISIBLE
         } else {
-            binding.cameraButton.visibility = View.INVISIBLE
-            binding.galleryButton.visibility = View.INVISIBLE
+            binding.cameraButton.visibility = View.GONE
+            binding.galleryButton.visibility = View.GONE
         }
     }
 
@@ -222,8 +271,6 @@ class MainActivity : AppCompatActivity() {
         if (menu != null) {
             menu.getItem(0).isVisible = viewModel.numOfCards.value?.compareTo(0)
                 ?.equals(1) == true
-//                    && viewModel.numOfCards.value?.compareTo(9)
-//                ?.equals(-1) == true
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -237,12 +284,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.selectedCards = mutableListOf<Card>()
         viewModel.numOfCards.value = 0
 
-
-        binding.recyclerView.adapter?.itemCount?.let {
-            binding.recyclerView.adapter?.notifyItemRangeChanged(
-                -1,
-                it + 1, "RESET"
-            )
+        binding.recyclerView.apply {
+            layoutManager = GridLayoutManager(this@MainActivity, 3)
+            adapter = CardsAdapter(dao.getAll(), viewModel)
         }
     }
 

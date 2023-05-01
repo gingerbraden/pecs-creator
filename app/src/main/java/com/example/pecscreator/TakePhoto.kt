@@ -11,6 +11,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -29,13 +30,15 @@ class TakePhoto : AppCompatActivity() {
 
     private var imageCapture: ImageCapture? = null
 
-    private lateinit var cameraExecutor: ExecutorService
-
     private lateinit var binding: ActivityTakePhotoBinding
+
+    private lateinit var cameraControl: CameraControl
+
+    private var torch = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = com.example.pecscreator.databinding.ActivityTakePhotoBinding.inflate(layoutInflater)
+        binding = ActivityTakePhotoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         getSupportActionBar()?.setTitle("Take A Picture");
@@ -50,6 +53,13 @@ class TakePhoto : AppCompatActivity() {
 
         // Set up the listeners for take photo and video capture buttons
         binding.imageCaptureButton.setOnClickListener { takePhoto() }
+
+        binding.toggleFlashButton.setOnClickListener {
+            torch = !torch
+            cameraControl.enableTorch(torch)
+            if (torch) binding.toggleFlashButton.setIconResource(R.drawable.baseline_flashlight_off_24)
+            else binding.toggleFlashButton.setIconResource(R.drawable.baseline_flashlight_on_24)
+        }
 
     }
 
@@ -127,8 +137,9 @@ class TakePhoto : AppCompatActivity() {
                 cameraProvider.unbindAll()
 
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                val camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture)
+                cameraControl = camera.cameraControl
 
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)

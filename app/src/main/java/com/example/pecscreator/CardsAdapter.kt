@@ -32,10 +32,10 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         holder.tv.text = allCards.get(position).description
         holder.iv.setImageBitmap(allCards.get(position).imageUri)
 
+
         if (!payloads.isEmpty()) {
             for (a : Any in payloads) {
                 if (a.equals("RESET")) {
-                    Log.d("ahoj", holder.tv.text.toString())
                     holder.ch.visibility = View.GONE
                     holder.iv.clearColorFilter()
                 }

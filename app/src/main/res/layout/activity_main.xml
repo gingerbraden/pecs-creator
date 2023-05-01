@@ -4,8 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    >
 
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/mainButton"
@@ -28,37 +46,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
-        android:clickable="true"
-        android:visibility="invisible"
-        android:focusable="true"
-        app:tint="@null"
         android:backgroundTint="@color/colorPrimaryVariant"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/mainButton"
         app:layout_constraintEnd_toEndOf="@+id/mainButton"
-        app:srcCompat="@drawable/baseline_camera_alt_24" />
+        app:srcCompat="@drawable/baseline_camera_alt_24"
+        app:tint="@null" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/galleryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
+        android:backgroundTint="@color/colorPrimaryVariant"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="invisible"
-        app:tint="@null"
-        android:backgroundTint="@color/colorPrimaryVariant"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/cameraButton"
         app:layout_constraintEnd_toEndOf="@+id/cameraButton"
-        app:srcCompat="@drawable/baseline_image_24" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:srcCompat="@drawable/baseline_image_24"
+        app:tint="@null" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/exportFab"
@@ -73,13 +82,6 @@
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:srcCompat="@drawable/baseline_playlist_add_check_24" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/deleteFab"
         android:layout_width="wrap_content"
@@ -92,6 +94,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:srcCompat="@drawable/baseline_delete_24" />
+
+
+
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

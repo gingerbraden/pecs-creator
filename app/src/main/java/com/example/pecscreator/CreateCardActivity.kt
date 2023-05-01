@@ -104,7 +104,13 @@ class CreateCardActivity : AppCompatActivity() {
 
         val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
-        val card = Card(binding.textView.text.toString(), binding.cropImageView.getCroppedImage(600, 700))
+
+        val card = Card(
+            binding.textView.text.toString(),
+            binding.cropImageView.getCroppedImage(600, 700)?.let {
+                Bitmap.createScaledBitmap(
+                    it, 600, 700, false)
+            })
 
         val db = CardsDatabase.getInstance(this)
         val dao = db.cardsDao()
@@ -120,6 +126,15 @@ class CreateCardActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
+        if (!dir.exists()) dir.mkdir()
+
+        val file2 = File(dir, viewModel.savedPhotoName + ".jpg")
+        file2.delete()
+    }
+
     override fun onStart() {
         super.onStart()
         getCroppedCoordinates()
@@ -129,11 +144,17 @@ class CreateCardActivity : AppCompatActivity() {
     fun getCroppedCoordinates() = run {
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, viewModel.savedPhotoUri)
-            val bytes = module.callAttr("returnCoordinates",
-                getStringFromImageView(bitmap)
-            )
-            coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
-            Log.d("Ahoj", coords.toString())
+            if (bitmap.width <= 1500) {
+                val bytes = module.callAttr("returnCoordinates",
+                    getStringFromImageView(bitmap)
+                )
+                coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
+            } else {
+                val bytes = module.callAttr("returnCoordinates",
+                    getStringFromImageView(Bitmap.createScaledBitmap(bitmap, bitmap.width/2, bitmap.width/2, false))
+                )
+                coords = bytes.toString().split(":").stream().map { x -> x.toInt()*2 }.toList().toMutableList()
+            }
             editedBmp = bitmap
             editCoordsToSquare()
             binding.cropButton.isClickable = true
