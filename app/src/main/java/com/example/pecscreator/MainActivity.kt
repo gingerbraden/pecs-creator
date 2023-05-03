@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -29,8 +30,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var viewModel: MainViewModel
 
-    // creating variable that handles Animations loading
-    // and initializing it with animation files that we have created
     private val rotateOpen: Animation by lazy {
         AnimationUtils.loadAnimation(
             this,
@@ -56,29 +55,27 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    //used to check if fab menu are opened or closed
     private var closed = true
     private val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
     private lateinit var db: CardsDatabase
     private lateinit var dao: CardDao
 
-
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
-        if (!sharedPreferences.contains("launched")) {
-            sharedPreferences.edit().putString("launched", "yes").apply()
+        Log.d("ahoj", packageName)
+
+//        val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
+//        if (!sharedPreferences.contains("launched")) {
+//            sharedPreferences.edit().putString("launched", "yes").apply()
             val intent = Intent(this@MainActivity, TutorialActivity::class.java)
             startActivity(intent)
-        }
+//        }
 
         db = CardsDatabase.getInstance(this)
         dao = db.cardsDao()
@@ -87,7 +84,6 @@ class MainActivity : AppCompatActivity() {
         val nameObserver = androidx.lifecycle.Observer<Int> { x ->
             clearAnimation()
             if (x >= 1) {
-//                OnAddButtonClick()
                 binding.deleteFab.visibility = View.VISIBLE
                 binding.exportFab.visibility = View.VISIBLE
                 binding.mainButton.visibility = View.GONE
@@ -118,7 +114,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-
         binding.mainButton.setOnClickListener {
             OnAddButtonClick()
         }
@@ -145,27 +140,27 @@ class MainActivity : AppCompatActivity() {
             }
 
             builder.setPositiveButton("OK") { _, _ ->
-                //TODO AK NEMA NIC SELECTUNTE
-                viewModel.createPDFWithMultipleImage()
-                resetSelection()
 
-                var photoURI: Uri? = null;
-                if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
-                    photoURI = FileProvider.getUriForFile(
-                        applicationContext,
-                        applicationContext.packageName + ".provider",
-                        viewModel.pdfFile!!
-                    )
+                    viewModel.createPDFWithMultipleImage()
+                    resetSelection()
+
+                    var photoURI: Uri? = null;
+                    if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
+                        photoURI = FileProvider.getUriForFile(
+                            applicationContext,
+                            applicationContext.packageName + ".provider",
+                            viewModel.pdfFile!!
+                        )
+                    }
+                    if (photoURI != null) {
+                        ShareCompat.IntentBuilder.from(this).setType("application/pdf")
+                            .addStream(photoURI).startChooser()
+                    }
+
+                    viewModel.pdfFile = null
                 }
-                if (photoURI != null) {
-                    ShareCompat.IntentBuilder.from(this).setType("application/pdf")
-                        .addStream(photoURI).startChooser()
-                }
 
-                viewModel.pdfFile = null
-            }
-
-            builder.setSingleChoiceItems(numbers, -1) { _, which ->
+            builder.setSingleChoiceItems(numbers, 1) { _, which ->
                 viewModel.numberOfCardsOnSinglePage = numbers[which].toInt()
             }
 
@@ -197,7 +192,6 @@ class MainActivity : AppCompatActivity() {
             adapter = CardsAdapter(all, viewModel)
         }
 
-
     }
 
     override fun onBackPressed() {
@@ -209,10 +203,8 @@ class MainActivity : AppCompatActivity() {
             invalidateOptionsMenu()
             resetSelection()
         } else {
-
             super.onBackPressed()
         }
-
     }
 
     private fun deleteSelection() {
@@ -281,7 +273,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetSelection() {
-        viewModel.selectedCards = mutableListOf<Card>()
+        viewModel.selectedCards = mutableListOf()
         viewModel.numOfCards.value = 0
 
         binding.recyclerView.apply {

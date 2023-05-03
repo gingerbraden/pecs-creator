@@ -83,9 +83,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             8 -> drawImage(bitmap, c, COORDINATES_EIGHT, 800, 928)
                             4 -> drawImage(bitmap, c, COORDINATES_FOUR, 1166, 1352)
                         }
-
                         drawTextForAll(c)
-
                     }
                 }
 
@@ -282,13 +280,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         return if (isFolderCreated) {
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val imageFileName = "PECS-Creator_$timeStamp"
-            var file = File(root, "$imageFileName.pdf")
+            val file = File(root, "$imageFileName.pdf")
             pdfFile = file
             File(root, "$imageFileName.pdf")
         } else {
             null
         }
     }
-
-
 }

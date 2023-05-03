@@ -63,12 +63,9 @@ class CreateCardActivity : AppCompatActivity() {
             }
         }
 
-
-
         binding.cropImageView.setImageUriAsync(viewModel.savedPhotoUri)
         binding.cropImageView.setAspectRatio(600, 700)
         oldRect = binding.cropImageView.cropRect
-
 
         binding.cropButton.setOnClickListener {
             if (coords.isNotEmpty()) {
@@ -101,7 +98,6 @@ class CreateCardActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-
         val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
 
@@ -118,8 +114,6 @@ class CreateCardActivity : AppCompatActivity() {
         val file2 = File(dir, viewModel.savedPhotoName + ".jpg")
         file2.delete()
 
-
-
         val intent = Intent(this@CreateCardActivity, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(intent)
@@ -135,10 +129,10 @@ class CreateCardActivity : AppCompatActivity() {
         file2.delete()
     }
 
+
     override fun onStart() {
         super.onStart()
         getCroppedCoordinates()
-
     }
 
     fun getCroppedCoordinates() = run {
@@ -188,16 +182,8 @@ class CreateCardActivity : AppCompatActivity() {
         return encodedImage
     }
 
-    //TODO NOT WOKRING PROPERLY
     fun rotateImageAndCoordinates() {
         binding.cropImageView.rotateImage(90)
-//        val oldX = coords[0]
-//        coords[0] = -coords[1]
-//        coords[1] = oldX
-//
-//        val oldWidth = coords[2]
-//        coords[2] = coords[3]
-//        coords[3] = oldWidth
     }
 
 

@@ -9,6 +9,7 @@ import androidx.room.TypeConverters
 @Database(entities = [Card::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class CardsDatabase : RoomDatabase() {
+
     abstract fun cardsDao(): CardDao
 
     companion object {

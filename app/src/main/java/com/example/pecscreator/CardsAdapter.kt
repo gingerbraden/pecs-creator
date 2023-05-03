@@ -32,7 +32,6 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         holder.tv.text = allCards.get(position).description
         holder.iv.setImageBitmap(allCards.get(position).imageUri)
 
-
         if (!payloads.isEmpty()) {
             for (a : Any in payloads) {
                 if (a.equals("RESET")) {
@@ -43,7 +42,6 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
         } else {
             holder.tv.text = allCards.get(position).description
             holder.iv.setImageBitmap(allCards.get(position).imageUri)
-
             holder.view.setOnLongClickListener {
                 if (addCardToList(allCards.get(position))) {
                     val greyFilter =
@@ -55,6 +53,21 @@ class CardsAdapter(private val allCards: List<Card>, private val viewModel: Main
                     holder.iv.clearColorFilter()
                 }
                 true
+            }
+            holder.view.setOnClickListener {
+            if (viewModel.numOfCards.value != null) {
+                if (viewModel.numOfCards.value!! >= 1) {
+                    if (addCardToList(allCards.get(position))) {
+                        val greyFilter =
+                            PorterDuffColorFilter(Color.parseColor("#FF6F00"), PorterDuff.Mode.MULTIPLY)
+                        holder.iv.setColorFilter(greyFilter)
+                        holder.ch.visibility = View.VISIBLE
+                    } else {
+                        holder.ch.visibility = View.GONE
+                        holder.iv.clearColorFilter()
+                    }
+                }
+            }
             }
         }
 

@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
@@ -43,7 +44,6 @@ class TakePhoto : AppCompatActivity() {
 
         getSupportActionBar()?.setTitle("Take A Picture");
 
-        // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -51,7 +51,6 @@ class TakePhoto : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
-        // Set up the listeners for take photo and video capture buttons
         binding.imageCaptureButton.setOnClickListener { takePhoto() }
 
         binding.toggleFlashButton.setOnClickListener {
@@ -61,13 +60,22 @@ class TakePhoto : AppCompatActivity() {
             else binding.toggleFlashButton.setIconResource(R.drawable.baseline_flashlight_on_24)
         }
 
+
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                cameraControl.setLinearZoom(progress / 100.toFloat())
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun takePhoto() {
-        // Get a stable reference of the modifiable image capture use case
+
         val imageCapture = imageCapture ?: return
 
-        // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
@@ -75,19 +83,15 @@ class TakePhoto : AppCompatActivity() {
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PECS Creator")
-//                put(Environment.DIRECTORY_PICTURES, "/PECS Creator")
             }
         }
 
-        // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(contentResolver,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 contentValues)
             .build()
 
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -103,10 +107,6 @@ class TakePhoto : AppCompatActivity() {
                     intent.putExtra("uri", output.savedUri)
                     intent.putExtra("name", name)
                     startActivity(intent)
-
-//                    val msg = "Photo capture succeeded: ${output.savedUri}"
-//                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-//                    Log.d(TAG, msg)
                 }
             }
         )
@@ -116,10 +116,8 @@ class TakePhoto : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
@@ -129,14 +127,11 @@ class TakePhoto : AppCompatActivity() {
             imageCapture = ImageCapture.Builder()
                 .build()
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Bind use cases to camera
                 val camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture)
                 cameraControl = camera.cameraControl
@@ -151,11 +146,6 @@ class TakePhoto : AppCompatActivity() {
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        cameraExecutor.shutdown()
     }
 
     companion object {
