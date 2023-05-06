@@ -70,12 +70,12 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("ahoj", packageName)
 
-//        val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
-//        if (!sharedPreferences.contains("launched")) {
-//            sharedPreferences.edit().putString("launched", "yes").apply()
+        val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
+        if (!sharedPreferences.contains("launched")) {
+            sharedPreferences.edit().putString("launched", "yes").apply()
             val intent = Intent(this@MainActivity, TutorialActivity::class.java)
             startActivity(intent)
-//        }
+        }
 
         db = CardsDatabase.getInstance(this)
         dao = db.cardsDao()

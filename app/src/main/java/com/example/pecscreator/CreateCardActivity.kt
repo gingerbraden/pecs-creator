@@ -150,28 +150,50 @@ class CreateCardActivity : AppCompatActivity() {
                 coords = bytes.toString().split(":").stream().map { x -> x.toInt()*2 }.toList().toMutableList()
             }
             editedBmp = bitmap
-            editCoordsToSquare()
+            editCoordsToSixBySeven()
             binding.cropButton.isClickable = true
             binding.cropButton.alpha = 1F
         }
     }
 
-    fun editCoordsToSquare() {
+    fun editCoordsToSixBySeven() {
+        val originalX = coords[0]
+        val originalY = coords[1]
+        val originalWidth = coords[2]
+        val originalHeight = coords[3]
 
-        val oldW = coords[2]
-        val oldH = coords[3]
+        Log.d("ahoj", coords.toString())
 
-        if (oldW > oldH) {
-            val diff = (oldW - oldH) / 2
-            coords[1] = coords[1] - diff
-            coords[3] = coords[3] + diff*2
+        val ratio = 6.0 / 7.0 // desired ratio
+
+        val currentRatio = originalWidth.toDouble() / originalHeight // current ratio
+
+        val newX: Int
+        val newY: Int
+        val newWidth: Int
+        val newHeight: Int
+
+        if (currentRatio > ratio) {
+            // current ratio is wider than desired ratio, expand height
+            newHeight = (originalWidth / ratio).toInt()
+            newY = originalY - (newHeight - originalHeight) / 2
+            newWidth = originalWidth
+            newX = originalX
+        } else {
+            // current ratio is taller than desired ratio, expand width
+            newWidth = (originalHeight * ratio).toInt()
+            newX = originalX - (newWidth - originalWidth) / 2
+            newHeight = originalHeight
+            newY = originalY
         }
 
-        if (oldW < oldH) {
-            val diff = (oldH - oldW) / 2
-            coords[0] = coords[0] - diff
-            coords[2] = coords[2] + diff*2
-        }
+        coords[0] = newX
+        coords[1] = newY
+        coords[2] = newWidth
+        coords[3] = newHeight
+
+        Log.d("ahoj", ratio.toString() + " " + (newWidth.toDouble() / newHeight).toString() + " " + coords.toString())
+
     }
 
     fun getStringFromImageView(b : Bitmap) : String {

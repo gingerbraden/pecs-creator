@@ -81,7 +81,7 @@ def returnCropped(obrazok, bulin):
 
 
 def returnCoordinates(obrazok):
-    decoded_data = base64.b64decode(getSaliencyMapFineGrained(obrazok))
+    decoded_data = base64.b64decode(getSaliencyMapSpectralResidual(obrazok))
     np_data = np.fromstring(decoded_data, np.uint8)
     image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
 
@@ -107,10 +107,15 @@ def returnCoordinates(obrazok):
     image = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
     Hx,Hy,Hw,Hh = findFaceOutline(image)
 
-    if x > Hx: x = Hx
-    if y > Hy: y = Hy
-    if x+Hw > x + w: w = Hw
-    if y+Hh > y + h: h = Hh
+    # if x > Hx: x = Hx
+    # if y > Hy: y = Hy
+    # if x+Hw > x + w: w = Hw
+    # if y+Hh > y + h: h = Hh
+
+    x = min(x, Hx)
+    y = min(y, Hy)
+    w = max(x + w, Hx + Hw) - x
+    h = max(y + h, Hy + Hh) - y
 
 
     return str(x) + ":" + str(y) + ":" + str(w) + ":" + str(h) + ":" + str(Hx) + ":" + str(Hy) + ":" + str(Hw) + ":" + str(Hh)
@@ -132,11 +137,10 @@ def findFaceOutline(obrazok):
     highestx = 0
     highesty = 0
 
-    for (x, y, w, h) in faces:
-        if x < lowestx: lowestx = x
-        if y < lowesty: lowesty = y
-        if x+w > highestx+x: highestx = w
-        if y+h > highesty+y: highesty = h
+    lowestx = min(faces, key=lambda r: r[0])[0]
+    lowesty = min(faces, key=lambda r: r[1])[1]
+    highestx = max(faces, key=lambda r: r[0]+r[2])[0] + faces[0][2] - lowestx
+    highesty = max(faces, key=lambda r: r[1]+r[3])[1] + faces[0][3] - lowesty
 
     return [lowestx, lowesty, highestx, highesty]
 
