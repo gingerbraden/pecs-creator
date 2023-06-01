@@ -31,6 +31,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var canvas: Canvas
 
+    private var COORDINATES_EIGHTEEN = listOf(
+        Pair(38, 38),
+        Pair(38, 865),
+        Pair(38, 1691),
+        Pair(623, 38),
+        Pair(623, 865),
+        Pair(623, 1691),
+        Pair(1207, 38),
+        Pair(1207, 865),
+        Pair(1207, 1691),
+        Pair(1792, 38),
+        Pair(1792, 865),
+        Pair(1792, 1691),
+        Pair(2376, 38),
+        Pair(2376, 865),
+        Pair(2376, 1691),
+        Pair(2961, 38),
+        Pair(2961, 865),
+        Pair(2961, 1691),
+    )
+
     private var COORDINATES_EIGHT = listOf(
         Pair(38, 38),
         Pair(913, 38),
@@ -80,6 +101,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     if (bitmap != null) {
 
                         when (numberOfCardsOnSinglePage) {
+                            18 -> drawImage(bitmap, c, COORDINATES_EIGHTEEN, 509, 594)
                             8 -> drawImage(bitmap, c, COORDINATES_EIGHT, 800, 928)
                             4 -> drawImage(bitmap, c, COORDINATES_FOUR, 1166, 1352)
                         }
@@ -99,6 +121,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun initializePageInfo(): PageInfo? {
         return when (numberOfCardsOnSinglePage) {
+            18 -> PageInfo.Builder(3508, 2480, 1).create()
             8 -> PageInfo.Builder(3508, 2480, 1).create()
             4 -> PageInfo.Builder(2480, 3508, 1).create()
             else -> null
@@ -118,6 +141,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         text_width = bounds.width()
 
         when (numberOfCardsOnSinglePage) {
+            18 -> {
+                if (text_width > 509) {
+                    drawTextTwoLines(
+                        text,
+                        textpaint,
+                        text_width,
+                        bounds,
+                        c,
+                        680F,
+                        760F,
+                        509,
+                        COORDINATES_EIGHTEEN
+                    )
+                } else {
+                    drawText(
+                        text,
+                        710F,
+                        text_width,
+                        textpaint,
+                        c % numberOfCardsOnSinglePage,
+                        509,
+                        COORDINATES_EIGHTEEN
+                    )
+                }
+            }
             8 -> {
                 if (text_width > 800) {
                     drawTextTwoLines(
@@ -251,6 +299,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun drawBoundaries(paint: Paint) {
         when (numberOfCardsOnSinglePage) {
+            18 -> drawBoundariesForEighteenCards(paint)
             8 -> drawBoundariesForEightCards(paint)
             4 -> drawBoundariesForFourCards(paint)
         }
@@ -261,6 +310,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         canvas.drawLine(1750.5F, 0F, 1750.5F, 2480F, paint)
         canvas.drawLine(2626.5F, 0F, 2626.5F, 2480F, paint)
         canvas.drawLine(0F, 1240F, 3508F, 1240F, paint)
+    }
+
+    private fun drawBoundariesForEighteenCards(paint: Paint) {
+        canvas.drawLine(584.7F, 0F, 584.7F, 2480F, paint)
+        canvas.drawLine(1169.7F, 0F, 1169.7F, 2480F, paint)
+        canvas.drawLine(1754F, 0F, 1754F, 2480F, paint)
+        canvas.drawLine(2338.7F, 0F, 2338.7F, 2480F, paint)
+        canvas.drawLine(2923.7F, 0F, 2923.7F, 2480F, paint)
+
+        canvas.drawLine(0F, 827F, 3508F, 827F, paint)
+        canvas.drawLine(0F, 1654F, 3508F, 1654F, paint)
     }
 
     private fun drawBoundariesForFourCards(paint: Paint) {

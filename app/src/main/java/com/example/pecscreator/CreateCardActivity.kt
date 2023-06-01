@@ -30,22 +30,22 @@ class CreateCardActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
-    lateinit var module : PyObject
+    lateinit var module: PyObject
 
-    var coords : MutableList<Int> = mutableListOf()
+    var coords: MutableList<Int> = mutableListOf()
 
-    var oldRect : Rect? = Rect()
+    var oldRect: Rect? = Rect()
 
-    var editedBmp : Bitmap? = null
+    var editedBmp: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateCardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        getSupportActionBar()?.setTitle("Edit Card");
+        supportActionBar?.title = "Edit Card"
 
-        if (! Python.isStarted()) {
+        if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this))
         }
 
@@ -70,7 +70,8 @@ class CreateCardActivity : AppCompatActivity() {
         binding.cropButton.setOnClickListener {
             if (coords.isNotEmpty()) {
                 binding.cropImageView.resetCropRect()
-                binding.cropImageView.cropRect = Rect(coords[0], coords[1], coords[0]+coords[2], coords[1]+coords[3])
+                binding.cropImageView.cropRect =
+                    Rect(coords[0], coords[1], coords[0] + coords[2], coords[1] + coords[3])
             }
         }
 
@@ -98,14 +99,16 @@ class CreateCardActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
+        val dir: File =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
 
         val card = Card(
             binding.textView.text.toString(),
             binding.cropImageView.getCroppedImage(600, 700)?.let {
                 Bitmap.createScaledBitmap(
-                    it, 600, 700, false)
+                    it, 600, 700, false
+                )
             })
 
         val db = CardsDatabase.getInstance(this)
@@ -122,7 +125,8 @@ class CreateCardActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val dir: File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
+        val dir: File =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/PECS Creator")
         if (!dir.exists()) dir.mkdir()
 
         val file2 = File(dir, viewModel.savedPhotoName + ".jpg")
@@ -139,15 +143,26 @@ class CreateCardActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, viewModel.savedPhotoUri)
             if (bitmap.width <= 1500) {
-                val bytes = module.callAttr("returnCoordinates",
+                val bytes = module.callAttr(
+                    "returnCoordinates",
                     getStringFromImageView(bitmap)
                 )
-                coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList().toMutableList()
+                coords = bytes.toString().split(":").stream().map { x -> x.toInt() }.toList()
+                    .toMutableList()
             } else {
-                val bytes = module.callAttr("returnCoordinates",
-                    getStringFromImageView(Bitmap.createScaledBitmap(bitmap, bitmap.width/2, bitmap.width/2, false))
+                val bytes = module.callAttr(
+                    "returnCoordinates",
+                    getStringFromImageView(
+                        Bitmap.createScaledBitmap(
+                            bitmap,
+                            bitmap.width / 2,
+                            bitmap.width / 2,
+                            false
+                        )
+                    )
                 )
-                coords = bytes.toString().split(":").stream().map { x -> x.toInt()*2 }.toList().toMutableList()
+                coords = bytes.toString().split(":").stream().map { x -> x.toInt() * 2 }.toList()
+                    .toMutableList()
             }
             editedBmp = bitmap
             editCoordsToSixBySeven()
@@ -161,8 +176,6 @@ class CreateCardActivity : AppCompatActivity() {
         val originalY = coords[1]
         val originalWidth = coords[2]
         val originalHeight = coords[3]
-
-        Log.d("ahoj", coords.toString())
 
         val ratio = 6.0 / 7.0 // desired ratio
 
@@ -192,23 +205,25 @@ class CreateCardActivity : AppCompatActivity() {
         coords[2] = newWidth
         coords[3] = newHeight
 
-        Log.d("ahoj", ratio.toString() + " " + (newWidth.toDouble() / newHeight).toString() + " " + coords.toString())
+        Log.d(
+            "ahoj",
+            ratio.toString() + " " + (newWidth.toDouble() / newHeight).toString() + " " + coords.toString()
+        )
 
     }
 
-    fun getStringFromImageView(b : Bitmap) : String {
+    fun getStringFromImageView(b: Bitmap): String {
         val baos = ByteArrayOutputStream()
         b.compress(Bitmap.CompressFormat.JPEG, 30, baos)
         val imageBytes = baos.toByteArray()
-        val encodedImage = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
+        val encodedImage =
+            android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
         return encodedImage
     }
 
     fun rotateImageAndCoordinates() {
         binding.cropImageView.rotateImage(90)
     }
-
-
 
 
 }

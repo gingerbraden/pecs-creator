@@ -3,13 +3,11 @@ package com.example.pecscreator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -67,8 +65,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-
-        Log.d("ahoj", packageName)
 
         val sharedPreferences = getSharedPreferences("PECS_SHARED", MODE_PRIVATE)
         if (!sharedPreferences.contains("launched")) {
@@ -129,39 +125,37 @@ class MainActivity : AppCompatActivity() {
 
         binding.exportFab.setOnClickListener {
 
-            val numbers = arrayOf("4", "8")
+            viewModel.numberOfCardsOnSinglePage = 8
+            val numbers = arrayOf("4 (Large cards)", "8 (Medium cards)", "18 (Small cards)")
             val builder = MaterialAlertDialogBuilder(this)
 
             builder.setTitle("Number of cards on a single page")
 
             builder.setNegativeButton("Cancel") { _, _ ->
-                resetSelection()
                 viewModel.numberOfCardsOnSinglePage = 0
             }
 
             builder.setPositiveButton("OK") { _, _ ->
-
-                    viewModel.createPDFWithMultipleImage()
-                    resetSelection()
-
-                    var photoURI: Uri? = null;
-                    if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
-                        photoURI = FileProvider.getUriForFile(
-                            applicationContext,
-                            applicationContext.packageName + ".provider",
-                            viewModel.pdfFile!!
-                        )
-                    }
-                    if (photoURI != null) {
-                        ShareCompat.IntentBuilder.from(this).setType("application/pdf")
-                            .addStream(photoURI).startChooser()
-                    }
-
-                    viewModel.pdfFile = null
+                viewModel.createPDFWithMultipleImage()
+                resetSelection()
+                var photoURI: Uri? = null
+                if (viewModel.pdfFile != null && viewModel.pdfFile!!.exists()) {
+                    photoURI = FileProvider.getUriForFile(
+                        applicationContext,
+                        applicationContext.packageName + ".provider",
+                        viewModel.pdfFile!!
+                    )
+                }
+                if (photoURI != null) {
+                    ShareCompat.IntentBuilder.from(this).setType("application/pdf")
+                        .addStream(photoURI).startChooser()
                 }
 
+                viewModel.pdfFile = null
+            }
+
             builder.setSingleChoiceItems(numbers, 1) { _, which ->
-                viewModel.numberOfCardsOnSinglePage = numbers[which].toInt()
+                viewModel.numberOfCardsOnSinglePage = numbers[which].split(" ")[0].toInt()
             }
 
             builder.show()
@@ -177,12 +171,10 @@ class MainActivity : AppCompatActivity() {
                     resetSelection()
                 }
                 .setNegativeButton("No") { dialog, id ->
-                    // Dismiss the dialog
                     dialog.dismiss()
                 }
             val alert = builder.create()
             alert.show()
-
 
 
         }
@@ -223,7 +215,7 @@ class MainActivity : AppCompatActivity() {
     private fun OnAddButtonClick() {
         setVisibility(closed)
         setAnimation(closed)
-        closed = !closed;
+        closed = !closed
     }
 
     private fun setAnimation(closed: Boolean) {

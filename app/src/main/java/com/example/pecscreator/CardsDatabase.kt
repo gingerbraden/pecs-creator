@@ -16,7 +16,7 @@ abstract class CardsDatabase : RoomDatabase() {
         private var instance: CardsDatabase? = null
         fun getInstance(context: Context): CardsDatabase {
             if (instance == null) {
-                instance = Room.databaseBuilder(context,CardsDatabase::class.java,"cards.db")
+                instance = Room.databaseBuilder(context, CardsDatabase::class.java, "cards.db")
                     .allowMainThreadQueries()
                     .build()
             }
